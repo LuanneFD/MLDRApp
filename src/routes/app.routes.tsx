@@ -7,14 +7,12 @@ import HistorySvg from '@assets/history.svg';
 import ProfileSvg from '@assets/profile.svg';
 
 import { Home } from '@screens/Home';
-import { MyRecipes } from '@screens/MyRecipes';
 import { Profile } from '@screens/Profile';
 import { RecipeDetails } from '@screens/RecipeDetails';
 import { CreateRecipe } from '@screens/CreateRecipe';
 
 type AppRoutes = {
     home: undefined;
-    myRecipes: undefined;
     profile: undefined;
     recipeDetails: undefined;
     createRecipe: undefined;
@@ -51,7 +49,7 @@ export function AppRoutes() {
                     )
                 }}
             />
-            <Screen name='myRecipes' component={MyRecipes}
+            <Screen name='createRecipe' component={CreateRecipe}
                 options={{
                     tabBarIcon: ({ color }) => (
                         <HistorySvg fill={color} width={iconSize} height={iconSize} />
@@ -66,7 +64,6 @@ export function AppRoutes() {
                 }}
             />
             <Screen name='recipeDetails' component={RecipeDetails} options={{ tabBarButton: () => null }} />
-            <Screen name='createRecipe' component={CreateRecipe} options={{ tabBarButton: () => null }} />
         </Navigator>
     );
 }
