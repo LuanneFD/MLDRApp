@@ -3,13 +3,14 @@ import { Button as NativeBaseButton, IButtonProps, Text } from 'native-base';
 type Props = IButtonProps & {
     title: string;
     variant?: 'solid' | 'outline';
+    size?: string;
 }
 
-export function Button({ title,variant = 'solid', ...rest }: Props) {
+export function Button({ title,variant = 'solid',size, ...rest }: Props) {
     return (
         <NativeBaseButton
             {...rest}
-            width="full"
+            width={size === null ? 'full' : size}
             height={14}
             background={variant === "outline" ?"transparent" : "green.700"}  
             borderWidth={variant === "outline" ? 1 : 0}

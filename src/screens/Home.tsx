@@ -26,6 +26,7 @@ export function Home() {
                 _contentContainerStyle={{ paddingX: 8 }}
                 marginY={10}
                 maxHeight={10}
+                minHeight={10}
                 data={groups}
                 keyExtractor={item => item}
                 renderItem={({ item }) => (

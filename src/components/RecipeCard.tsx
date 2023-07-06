@@ -14,6 +14,7 @@ export function RecipeCard({ ...rest }: Props) {
                     rounded="md"
                     marginRight={4}
                     alt="Imagem da receita"
+                    resizeMode='cover'
                     source={{ uri: 'https://static.itdg.com.br/images/1200-675/00476ffdd307a762beb387d9f3da0ae1/321428-original.jpg' }} />
 
                 <VStack flex={1}>
