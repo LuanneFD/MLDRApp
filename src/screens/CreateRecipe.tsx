@@ -2,11 +2,13 @@ import { Input } from '@components/Input';
 import { Button } from '@components/Button';
 import { RecipePhoto } from '@components/RecipePhoto';
 import { ScreenHeader } from '@components/ScreenHeader';
-import { VStack, Skeleton, Text, Center, ScrollView, HStack, useToast, TextArea} from 'native-base';
+import { VStack, Skeleton, Text, Center, ScrollView, HStack, useToast, TextArea, Box, Heading } from 'native-base';
 import { useState } from 'react';
-import { TouchableOpacity,Modal } from 'react-native';
+import { TouchableOpacity, Modal, TextInput } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import { border } from 'native-base/lib/typescript/theme/styled-system';
+import { FunctionToggleMenu } from 'native-base/lib/typescript/components/composites/Typeahead/useTypeahead/types';
 
 const PHOTO_SIZE = 200;
 
@@ -89,39 +91,39 @@ export function CreateRecipe() {
 
                     <Input placeholder='Url vídeo' />
 
-                    <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showModal}
-        onRequestClose={() => {
+                    <Modal presentationStyle='formSheet'
+                        animationType="slide"
+                        visible={showModal}
+                        onRequestClose={() => {
 
-          setShowModal(false);
-        }}>
-<VStack backgroundColor={'gray.400'} marginY={24} marginX={15} >
-<TextArea placeholder='Breve descrição'
-                        autoCompleteType={undefined}
-                        maxLength={80}
-
-                        width={'full'}
-                        height={'24'}
-                        fontSize="md"
-                        color="white"
-                        fontFamily="body"
-                        bg="gray.700" marginBottom={4}
-                        placeholderTextColor="gray.300"
-                        _focus={{
-                            bg: "gray.700",
-                            borderWidth: 1,
-                            borderColor: "green.500"
+                            setShowModal(false);
                         }}>
-                        hgethrthrththrhrthrt
-                    </TextArea>
 
-                    <Button onPress={() => setShowModal(false)} size={32} title='Salvar' variant={'solid'} />
-</VStack>
+                        <VStack padding={8} bg={'gray.400'} height={'full'}>
+                            <Heading color="gray.100" fontSize="lg" fontFamily={'heading'}>Ingredientes</Heading>
 
+                            <TextArea placeholder='Descreva os ingredientes da receita'
+                                autoCompleteType={undefined}
+                                width={'full'}
+                                height={'64'}
+                                fontSize="md"
+                                color="white"
+                                fontFamily="body"
+                                bg="gray.700" marginBottom={4}
+                                placeholderTextColor="gray.300"
+                                _focus={{
+                                    bg: "gray.700",
+                                    borderWidth: 1,
+                                    borderColor: "green.500"
+                                }}>
+                                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nostrum culpa pariatur voluptatum adipisci? Similique eos at illo aliquid harum, sit ut quam excepturi molestias aperiam commodi eaque qui sapiente non.
+                            </TextArea>
 
-      </Modal>
+                            <Button onPress={() => setShowModal(false)} title='Salvar' variant={'solid'} />
+
+                        </VStack>
+
+                    </Modal>
 
                     <HStack justifyContent={'space-between'}>
                         <Button onPress={() => setShowModal(true)} size={32} title='Ingredientes' variant={'outline'} />
