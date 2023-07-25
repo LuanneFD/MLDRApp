@@ -2,13 +2,17 @@ import { useForm, Controller } from 'react-hook-form';
 import { useNavigation } from '@react-navigation/native'
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
-import { VStack, Image, Text, Center, Heading, ScrollView,Switch, HStack } from 'native-base';
+import { VStack, Image, Text, Center, Heading, ScrollView, Switch, HStack, useToast } from 'native-base';
+
+import { api } from '@services/api';
 
 import BackGroundImg from '@assets/background.png'
 import LogoSvg from '@assets/logo.svg';
 
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
+import { AppError } from '@utils/AppError';
+
 
 
 type FormDataProps = {
@@ -18,14 +22,18 @@ type FormDataProps = {
     confirmPassword: string;
 }
 
+const type = 'A';
+
 const signUpSchema = yup.object({
-name: yup.string().required('Informe o nome.'),
-email: yup.string().required('Informe o e-mail.').email('E-mail inválido.'),
-password: yup.string().required('Informe a senha.').min(6,'A senha deve ter pelo menos 6 dígitos.'),
-confirmPassword :  yup.string().required('Confirme a senha.').oneOf([yup.ref('password'),''],'A confirmação da senha não confere.')
+    name: yup.string().required('Informe o nome.'),
+    email: yup.string().required('Informe o e-mail.').email('E-mail inválido.'),
+    password: yup.string().required('Informe a senha.').min(6, 'A senha deve ter pelo menos 6 dígitos.'),
+    confirmPassword: yup.string().required('Confirme a senha.').oneOf([yup.ref('password'), ''], 'A confirmação da senha não confere.')
 });
 
 export function SignUp() {
+
+    const toast = useToast();
 
     const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>({
         resolver: yupResolver(signUpSchema)
@@ -36,8 +44,21 @@ export function SignUp() {
         navigation.goBack();
     }
 
-    function hadleSignUp(data: FormDataProps) {
+    async function hadleSignUp({ name, email, password }: FormDataProps) {
 
+        try {
+            const response = await api.post('/users', { name, email, type, password });
+            console.log(response.data);
+        }
+        catch (error) {
+            const isAppError = error instanceof AppError;
+            const title = isAppError ? error.message : 'Não foi possível criar a conta. Tente novamente mais tarde.'
+            toast.show({
+                title,
+                placement: 'top',
+                bgColor: 'red.500'
+            });
+        }
     }
 
     return (
@@ -63,10 +84,16 @@ export function SignUp() {
                                 errorMessage={errors.name?.message} />)}
                     />
 
-<HStack alignItems={'center'} alignContent={'space-between'}>
-<Switch onTrackColor="green.500" onThumbColor="green.400" offTrackColor="gray.500"  offThumbColor="gray.100" size="md" />
+                    {/* <HStack alignItems={'center'} alignContent={'space-between'}>
+    <Controller control={control} name="typeUser" 
+        render={({ field: { onChange, value } }) => (
+        <Switch onChange={onChange}
+        value={value}
+        onTrackColor="green.500" onThumbColor="green.400" offTrackColor="gray.500"  offThumbColor="gray.100" size="md" />)}
+    />
+
 <Text color={'white'}>Perfil Profissional</Text>
-</HStack>
+</HStack> */}
 
                     <Controller
                         control={control}
