@@ -47,10 +47,10 @@ export function SignUp() {
     async function hadleSignUp({ name, email, password }: FormDataProps) {
 
         try {
-            const response = await api.post('/users', { name, email, type, password });
-            console.log(response.data);
+             await api.post('/users', { name, email, type, password });
         }
         catch (error) {
+            console.log(error);
             const isAppError = error instanceof AppError;
             const title = isAppError ? error.message : 'Não foi possível criar a conta. Tente novamente mais tarde.'
             toast.show({

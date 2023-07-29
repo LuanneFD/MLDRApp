@@ -1,6 +1,8 @@
 import { useNavigation } from '@react-navigation/native'
-import { VStack, Image, Text, Center, Heading, ScrollView } from 'native-base';
+import { useForm, Controller } from 'react-hook-form';
+import { VStack, Image, Text, Center, Heading, ScrollView, useToast } from 'native-base';
 
+import { useAuth } from '@hooks/useAuth';
 import { AuthNavigatorRoutesProps } from '@routes/auth.routes';
 
 import BackGroundImg from '@assets/background.png'
@@ -8,13 +10,45 @@ import LogoSvg from '@assets/logo.svg';
 
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
+import { AppError } from '@utils/AppError';
+import { useState } from 'react';
+
+type FormDataProps = {
+    email: string;
+    password: string;
+}
 
 export function SignIn() {
-
+const [isLoading, setIsLoading] = useState(false);
+    const toast = useToast();
+    const { signIn } = useAuth();
     const navigation = useNavigation<AuthNavigatorRoutesProps>();
 
-    function handleNewAccount(){
+    const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>();
+
+    function handleNewAccount() {
         navigation.navigate('signUp');
+    }
+
+    async function handleSignIn({ email, password }: FormDataProps) {
+        try {
+            setIsLoading(true);
+            await signIn(email, password);
+
+        }
+        catch (error) {
+            const isAppError = error instanceof AppError;
+            const title = isAppError ? error.message : 'E-mail ou senha incorretos.'
+
+            setIsLoading(false);
+
+            toast.show({
+                title,
+                placement: 'top',
+                bgColor: 'red.500'
+            });
+
+        }
     }
 
     return (
@@ -29,13 +63,36 @@ export function SignIn() {
                     <Heading color="gray.100" fontSize="xl" marginBottom={6} fontFamily="heading">
                         Acesse sua conta
                     </Heading>
-                    <Input
-                        placeholder='E-mail'
-                        keyboardType='email-address'
-                        autoCapitalize='none' />
 
-                    <Input placeholder='Senha' secureTextEntry />
-                    <Button title="Acessar" />
+                    <Controller
+                        control={control}
+                        name="email"
+                        rules={{ required: 'Informe o e-mail' }}
+                        render={({ field: { onChange, value } }) => (
+                            <Input
+                                onChangeText={onChange}
+                                value={value}
+                                errorMessage={errors.email?.message}
+                                placeholder='E-mail'
+                                keyboardType='email-address'
+                                autoCapitalize='none' />)}
+                    />
+
+                    <Controller
+                        control={control}
+                        name="password"
+                        rules={{ required: 'Informe a senha' }}
+                        render={({ field: { onChange, value } }) => (
+                            <Input
+                                onChangeText={onChange}
+                                value={value}
+                                errorMessage={errors.password?.message}
+                                onSubmitEditing={handleSubmit(handleSignIn)}
+                                returnKeyType='send'
+                                placeholder='Senha' secureTextEntry />)}
+                    />
+
+                    <Button title="Acessar" onPress={handleSubmit(handleSignIn)} isLoading={isLoading} />
                 </Center>
 
                 <Center marginTop={24}>
