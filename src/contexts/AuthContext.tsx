@@ -1,11 +1,13 @@
 import { UserDTO } from "@dtos/UserDTO";
 import { ReactNode, createContext, useEffect, useState } from "react";
 import { api } from "@services/api";
-import { storageUserSave, storageUserGet } from "@storage/storage.user";
+import { storageUserSave, storageUserGet, storageUseRemove } from "@storage/storage.user";
 
 export type AuthContextDataProps = {
     user: UserDTO;
     signIn: (email: string, password: string) => Promise<void>;
+    signOut : () => Promise<void>;
+    isLoadingStorageData: boolean;
 }
 
 type AuthContextProviderProps = {
@@ -17,6 +19,7 @@ export const AuthContext = createContext<AuthContextDataProps>({} as AuthContext
 
 export function AuthContextProvider({ children }: AuthContextProviderProps) {
     const [user, setUser] = useState<UserDTO>({} as UserDTO);
+    const [isLoadingStorageData, setIsLoadingStorageData] = useState(true);
 
     async function signIn(email: string, password: string) {
         try {
@@ -32,10 +35,32 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
         }
     }
 
+    async function signOut() {
+        try {
+            setIsLoadingStorageData(true);
+            setUser({} as UserDTO);
+            await storageUseRemove();
+        }
+        catch (error) {
+            throw (error);
+        }
+        finally {
+            setIsLoadingStorageData(false);
+        }
+    }
+
     async function loadUserData() {
-        const userLogged = await storageUserGet();
-        if (userLogged) {
-            setUser(userLogged);
+        try {
+            const userLogged = await storageUserGet();
+            if (userLogged) {
+                setUser(userLogged);
+            }
+        }
+        catch (error) {
+            throw error;
+        }
+        finally {
+            setIsLoadingStorageData(false);
         }
     }
 
@@ -44,7 +69,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, signIn }}>
+        <AuthContext.Provider value={{ user, signIn,signOut, isLoadingStorageData }}>
             {children}
         </AuthContext.Provider>
     )

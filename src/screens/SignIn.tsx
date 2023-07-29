@@ -19,7 +19,7 @@ type FormDataProps = {
 }
 
 export function SignIn() {
-const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const toast = useToast();
     const { signIn } = useAuth();
     const navigation = useNavigation<AuthNavigatorRoutesProps>();

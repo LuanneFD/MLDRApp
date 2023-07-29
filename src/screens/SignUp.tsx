@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigation } from '@react-navigation/native'
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -12,6 +13,7 @@ import LogoSvg from '@assets/logo.svg';
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
 import { AppError } from '@utils/AppError';
+import { useAuth } from '@hooks/useAuth';
 
 
 
@@ -32,7 +34,8 @@ const signUpSchema = yup.object({
 });
 
 export function SignUp() {
-
+    const [isLoading, setIsLoading] = useState(false);
+    const {signIn} = useAuth();
     const toast = useToast();
 
     const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>({
@@ -47,10 +50,13 @@ export function SignUp() {
     async function hadleSignUp({ name, email, password }: FormDataProps) {
 
         try {
-             await api.post('/users', { name, email, type, password });
+            setIsLoading(true);
+            await api.post('/users', { name, email, type, password });
+            await signIn(email, password);
         }
         catch (error) {
-            console.log(error);
+            setIsLoading(false);
+            
             const isAppError = error instanceof AppError;
             const title = isAppError ? error.message : 'Não foi possível criar a conta. Tente novamente mais tarde.'
             toast.show({
@@ -132,7 +138,7 @@ export function SignUp() {
                     />
 
 
-                    <Button title="Criar e acessar" onPress={handleSubmit(hadleSignUp)} />
+                    <Button title="Criar e acessar" onPress={handleSubmit(hadleSignUp)} isLoading={isLoading} />
                 </Center>
 
                 <Button marginTop={16} title="Voltar para o login" variant="outline" onPress={handleGoBack} />
