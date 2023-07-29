@@ -1,20 +1,79 @@
-import { useState } from 'react';
-import {useNavigation} from '@react-navigation/native'
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { Group } from '@components/Group';
 import { HomeHeader } from '@components/HomeHeader';
-import { VStack, FlatList, Heading } from 'native-base';
+import { VStack, FlatList, Heading, useToast } from 'native-base';
 import { RecipeCard } from '@components/RecipeCard';
 import { AppNavigatorRoutesProps } from '@routes/app.routes';
 
+import { api } from '@services/api';
+import { AppError } from '@utils/AppError';
+import { useAuth } from '@hooks/useAuth';
+import { CategoryDTO } from '@dtos/CategoryDTO';
+import { RecipeDTO } from '@dtos/RecipeDTO';
+import { boolean } from 'yup';
+import { Loading } from '@components/Loading';
+
 export function Home() {
-    const [groupSelected, setGroupSelected] = useState('sobremesa');
-    const [groups, SetGroups] = useState(['sobremesa', 'massa', 'carne', 'saladas', 'molhos']);
-    const [recipes, setRecipes] = useState(['Brigadeiro Belga', 'Macarrão à carbonara', 'Filet Mignom']);
+
+    const [isLoading, setIsLoading] = useState(true);
+    //useState<CategoryDTO>({} as CategoryDTO);
+    const [categorySelected, setCategorySelected] = useState('Massa');
+    const [categories, SetCategories] = useState<CategoryDTO[]>([]);
+    const [recipes, setRecipes] = useState<RecipeDTO[]>([]);
+    const { user } = useAuth();
 
     const navigation = useNavigation<AppNavigatorRoutesProps>();
-    function handleOpenRecipeDetails (){
-        navigation.navigate('recipeDetails');
+    const toast = useToast();
+
+    function handleOpenRecipeDetails(recipeId: string) {
+        navigation.navigate('recipeDetails', {recipeId});
     }
+
+    async function fetchCategories() {
+        try {
+            const response = await api.get('/categories');
+            SetCategories(response.data);
+        }
+        catch (error) {
+            const isAppError = error instanceof AppError;
+            const title = isAppError ? error.message : 'Não foi possível carregar as categorias.'
+
+            toast.show({
+                title,
+                placement: 'top',
+                bgColor: 'red.500'
+            });
+
+        }
+    }
+
+    async function fetchRecipesByCategory() {
+        try {
+            setIsLoading(true);
+            const response = await api.get(`/recipes/list/${user.id}/12`);
+            setRecipes(response.data);
+        }
+        catch (error) {
+            const isAppError = error instanceof AppError;
+            const title = isAppError ? error.message : 'Não foi possível carregar as receitas.'
+
+            toast.show({
+                title,
+                placement: 'top',
+                bgColor: 'red.500'
+            });
+
+        }
+        finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => { fetchCategories() }, []);
+
+    useFocusEffect(useCallback(() => { fetchRecipesByCategory(); }, [categorySelected]));
+
     return (
         <VStack flex={1}>
 
@@ -27,23 +86,25 @@ export function Home() {
                 marginY={10}
                 maxHeight={10}
                 minHeight={10}
-                data={groups}
-                keyExtractor={item => item}
+                data={categories}
+                keyExtractor={item => item.id}
                 renderItem={({ item }) => (
-                    <Group name={item} isActive={groupSelected.toLocaleUpperCase() === item.toLocaleUpperCase()} onPress={() => setGroupSelected(item)} />
+                    <Group name={item.description} isActive={categorySelected.toLocaleUpperCase() === item.description.toLocaleUpperCase()} onPress={() => setCategorySelected(item.description)} />
                 )} />
 
             <VStack flex={1} paddingX={8}>
                 <Heading color="gray.200" fontSize="lg" marginBottom={5}>Receitas</Heading>
-                <FlatList
-                showsVerticalScrollIndicator={false}
-                _contentContainerStyle={{paddingBottom:20}}
-                    data={recipes}
-                    keyExtractor={item => item}
-                    renderItem={({ item }) => (
-                        <RecipeCard onPress={handleOpenRecipeDetails}/>
-                    )}
-                />
+                {isLoading ? <Loading /> :
+                    <FlatList
+                        showsVerticalScrollIndicator={false}
+                        _contentContainerStyle={{ paddingBottom: 20 }}
+                        data={recipes}
+                        keyExtractor={item => item.id}
+                        renderItem={({ item }) => (
+                            <RecipeCard data={item} onPress={() => handleOpenRecipeDetails(item.id)} />
+                        )}
+                    />
+                }
 
             </VStack>
         </VStack>

@@ -14,7 +14,7 @@ import { CreateRecipe } from '@screens/CreateRecipe';
 type AppRoutes = {
     home: undefined;
     profile: undefined;
-    recipeDetails: undefined;
+    recipeDetails: {recipeId : string};
     createRecipe: undefined;
 }
 

@@ -1,72 +1,44 @@
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
-import { RecipePhoto } from '@components/RecipePhoto';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { VStack, Skeleton, Text, Center, ScrollView, HStack, useToast, TextArea, Box, Heading } from 'native-base';
 import { useState } from 'react';
 import { TouchableOpacity, Modal, TextInput } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+
 import { border } from 'native-base/lib/typescript/theme/styled-system';
 import { FunctionToggleMenu } from 'native-base/lib/typescript/components/composites/Typeahead/useTypeahead/types';
+import { useNavigation } from '@react-navigation/native';
+import { AppNavigatorRoutesProps } from '@routes/app.routes';
 
 const PHOTO_SIZE = 200;
 
 export function CreateRecipe() {
+    const [sendingRecipe, setSendingRecipe] = useState(false);
     const [photoIsLoading, setphotoIsLoading] = useState(false);
     const [recipePhoto, setRecipePhoto] = useState('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAW1MGZnElSlbEl-qw6RgCCmLcSDrjfz2N8g&usqp=CAU');
     const [showModal, setShowModal] = useState(false);
     const toast = useToast();
+    const navigation = useNavigation<AppNavigatorRoutesProps>();
 
-    async function handleRecipePhotoSelect() {
-        setphotoIsLoading(true);
-        try {
-            const photoSelected = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                quality: 1,
-                aspect: [4, 4],
-                allowsEditing: true
-            });
+    async function handleCreateRecipe(){
+        //setSendingRecipe(true); descomentar depois
 
-            if (!photoSelected.canceled && photoSelected.assets[0].uri) {
-                const photoInfo = await FileSystem.getInfoAsync(photoSelected.assets[0].uri);
+        toast.show({
+            title: 'Receita cadastrada com sucesso!',
+            placement: 'top',
+            duration: 3000,
+            bgColor: 'green.700',
+        });
 
-                if (photoInfo.exists && photoInfo.size > 1024 * 1024 * 1) {
-                    return toast.show({
-                        title: 'A imagem deve ter no máximo 3MB',
-                        placement: 'top',
-                        duration: 3000,
-                        bgColor: 'red.500',
-                    });
-                }
-                setRecipePhoto(photoSelected.assets[0].uri);
-            }
-        }
-        catch (error) {
-            console.log(error);
-        }
-        finally {
-            setphotoIsLoading(false);
-        }
+        const recipeId = '1';
+        //enviar para a tela de detalhes da receita com seu id que foi gerado.
+        navigation.navigate('recipeDetails', {recipeId});
     }
 
     return (
         <VStack flex={1}>
             <ScrollView>
                 <ScreenHeader title="Nova Receita" />
-
-                <Center>
-                    {
-                        photoIsLoading ?
-                            <Skeleton height={PHOTO_SIZE} startColor="gray.500" endColor="gray.400" />
-                            :
-                            <RecipePhoto alt="foto da receita" source={{ uri: recipePhoto }} size={PHOTO_SIZE} />
-                    }
-
-                    <TouchableOpacity onPress={handleRecipePhotoSelect}>
-                        <Text color="green.500" fontWeight={'bold'} fontSize={'md'} marginBottom={8}>Alterar Imagem</Text>
-                    </TouchableOpacity>
-                </Center>
 
                 <VStack paddingX={8} paddingY={5} bg={'gray.600'} space={1}>
                     <Input placeholder='Nome da receita' />
@@ -127,7 +99,7 @@ export function CreateRecipe() {
 
                     <HStack justifyContent={'space-between'}>
                         <Button onPress={() => setShowModal(true)} size={32} title='Ingredientes' variant={'outline'} />
-                        <Button onPress={() => setShowModal(true)} size={32} title='Preparo' variant={'outline'} />
+                        <Button onPress={() => handleCreateRecipe()} size={32} title='Salvar' variant={'outline'} isLoading={sendingRecipe}/>
                     </HStack>
                 </VStack>
 
