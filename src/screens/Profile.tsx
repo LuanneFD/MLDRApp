@@ -11,6 +11,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { useAuth } from '@hooks/useAuth';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { api } from '@services/api';
+import { AppError } from '@utils/AppError';
 
 
 const PHOTO_SIZE = 33;
@@ -18,24 +20,38 @@ const PHOTO_SIZE = 33;
 type FormDataProps = {
     name: string;
     email: string;
+    type: string
     password: string;
-    confirm_password: string;
+    confirm_Password: string;
 }
 
 const profileSchema = yup.object({
     name: yup.string().required('Informe o nome.'),
     password: yup.string().min(6, 'A senha deve ter pelo menos 6 dígitos.').nullable().transform((value) => !!value ? value : null),
-    confirmPassword: yup.string().oneOf([yup.ref('password'), ''], 'A confirmação da senha não confere.').nullable().transform((value) => !!value ? value : null)
+    confirm_Password: yup
+        .string()
+        .oneOf([yup.ref('password'), ''], 'A confirmação da senha não confere.')
 });
+
+// confirm_Password: yup
+// .string()
+// .oneOf([yup.ref('password'), ''], 'A confirmação da senha não confere.')
+// .when('password', {
+//     is: (Field: any) => Field,
+//     then: yup.string().nullable().required('Confirme a senha.')
+//     .transform((value) => !!value ? value : null)
+// })
+// });
 
 export function Profile() {
 
+    const [isLoading, setIsLoading] = useState(false);
     const [photoIsLoading, setphotoIsLoading] = useState(false);
     const [userPhoto, setUserPhoto] = useState('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAW1MGZnElSlbEl-qw6RgCCmLcSDrjfz2N8g&usqp=CAU');
     const toast = useToast();
-    const { user } = useAuth();
+    const { user, updateUserProfile } = useAuth();
 
-    const { control, handleSubmit, formState: {errors} } = useForm<FormDataProps>({
+    const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>({
         defaultValues: {
             name: user.name,
             email: user.email
@@ -54,7 +70,11 @@ export function Profile() {
                 allowsEditing: true
             });
 
-            if (!photoSelected.canceled && photoSelected.assets[0].uri) {
+            if (photoSelected.canceled) {
+                return;
+            }
+
+            if (photoSelected.assets[0].uri) {
                 const photoInfo = await FileSystem.getInfoAsync(photoSelected.assets[0].uri);
 
                 if (photoInfo.exists && photoInfo.size > 1024 * 1024 * 1) {
@@ -65,7 +85,16 @@ export function Profile() {
                         bgColor: 'red.500',
                     });
                 }
+
+                const fileExtension = photoSelected.assets[0].uri.split('.').pop();
+                const photoFile = {
+                    name: `${user.name}.${fileExtension}`.toLowerCase(),
+                    uri : photoSelected.assets[0].uri,
+                    type : `${photoSelected.assets[0].type}/${fileExtension}`
+                }
+
                 setUserPhoto(photoSelected.assets[0].uri);
+
             }
         }
         catch (error) {
@@ -76,8 +105,35 @@ export function Profile() {
         }
     }
 
-    async function handleProfileUpdate(data: FormDataProps) {
+    async function handleProfileUpdate({ name, email, password }: FormDataProps) {
+        try {
+            setIsLoading(true);
 
+            const userUpdated = user;
+            userUpdated.name = name;
+
+            await api.put(`/users/${user.id}`, { name, email, type: user.type, password });
+            await updateUserProfile(userUpdated);
+
+            toast.show({
+                title: 'Perfil atualizado com sucesso!',
+                placement: 'top',
+                bgColor: 'green.500'
+            });
+        }
+        catch (error) {
+
+            const isAppError = error instanceof AppError;
+            const title = isAppError ? error.message : 'Não foi possível atualizar os dados do perfil.'
+            toast.show({
+                title,
+                placement: 'top',
+                bgColor: 'red.500'
+            });
+        }
+        finally {
+            setIsLoading(false);
+        }
     }
 
 
@@ -129,13 +185,13 @@ export function Profile() {
 
                     <Controller
                         control={control}
-                        name="confirm_password"
+                        name="confirm_Password"
                         render={({ field: { onChange } }) => (
-                            <Input bg={'gray.600'} placeholder='Confirmar senha' secureTextEntry onChangeText={onChange} errorMessage={errors.confirm_password?.message} />
+                            <Input bg={'gray.600'} placeholder='Confirmar senha' secureTextEntry onChangeText={onChange} errorMessage={errors.confirm_Password?.message} />
                         )}
                     />
 
-                    <Button title='Atualizar' marginTop={4} onPress={handleSubmit(handleProfileUpdate)} />
+                    <Button title='Atualizar' marginTop={4} onPress={handleSubmit(handleProfileUpdate)} isLoading={isLoading} />
                 </VStack>
             </ScrollView>
         </VStack>

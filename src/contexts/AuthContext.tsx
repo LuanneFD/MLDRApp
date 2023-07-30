@@ -6,8 +6,9 @@ import { storageUserSave, storageUserGet, storageUseRemove } from "@storage/stor
 export type AuthContextDataProps = {
     user: UserDTO;
     signIn: (email: string, password: string) => Promise<void>;
-    signOut : () => Promise<void>;
+    signOut: () => Promise<void>;
     isLoadingStorageData: boolean;
+    updateUserProfile : (userUpdated: UserDTO) => Promise<void>
 }
 
 type AuthContextProviderProps = {
@@ -64,12 +65,22 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
         }
     }
 
+    async function updateUserProfile(userUpdated: UserDTO) {
+        try {
+            setUser(userUpdated);
+            await storageUserSave(userUpdated);
+        }
+        catch (error) {
+            throw error;
+        }
+    }
+
     useEffect(() => {
         loadUserData();
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, signIn,signOut, isLoadingStorageData }}>
+        <AuthContext.Provider value={{ user, signIn, signOut, isLoadingStorageData, updateUserProfile }}>
             {children}
         </AuthContext.Provider>
     )
