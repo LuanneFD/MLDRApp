@@ -91,10 +91,23 @@ export function Profile() {
                     name: `${user.name}.${fileExtension}`.toLowerCase(),
                     uri : photoSelected.assets[0].uri,
                     type : `${photoSelected.assets[0].type}/${fileExtension}`
-                }
+                } as any;
 
-                setUserPhoto(photoSelected.assets[0].uri);
+                //setUserPhoto(photoSelected.assets[0].uri);
+                const userPhotoUploadForm = new FormData();
+                userPhotoUploadForm.append('avatar', photoFile);
 
+                await api.put(`/recipes/img/${user.id}` , userPhotoUploadForm, {
+                    headers: {
+                        'Content-Type' : 'multipart/form-data'
+                    }
+                });
+
+                toast.show({
+                    title : 'Foto atualizada!',
+                    placement: 'top',
+                    bgColor: 'green.500'
+                });
             }
         }
         catch (error) {
