@@ -14,6 +14,7 @@ import { Profile } from "@screens/Profile";
 import { RecipeDetails } from "@screens/RecipeDetails";
 import { CreateRecipe } from "@screens/CreateRecipe";
 import { UserRecipes } from "@screens/UserRecipes";
+import { MediasRecipe } from "@screens/MediasRecipe";
 
 type AppRoutes = {
   home: undefined;
@@ -21,6 +22,7 @@ type AppRoutes = {
   recipeDetails: { recipeId: string };
   createRecipe: undefined;
   userRecipes: undefined;
+  mediasRecipe: undefined;
 };
 
 export type AppNavigatorRoutesProps = BottomTabNavigationProp<AppRoutes>;
@@ -91,6 +93,12 @@ export function AppRoutes() {
       <Screen
         name="recipeDetails"
         component={RecipeDetails}
+        options={{ tabBarButton: () => null }}
+      />
+
+      <Screen
+        name="mediasRecipe"
+        component={MediasRecipe}
         options={{ tabBarButton: () => null }}
       />
     </Navigator>

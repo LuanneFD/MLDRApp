@@ -47,7 +47,6 @@ const recipeSchema = yup.object({
 export function CreateRecipe() {
   const [ingredients, setIngredients] = useState("");
   const [howTo, setHowTo] = useState("");
-  const [urlVideo, setUrlVideo] = useState("");
   const [privateRecipe, setPrivateRecipe] = useState(false);
   const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const [sendingRecipe, setSendingRecipe] = useState(false);
@@ -156,6 +155,10 @@ export function CreateRecipe() {
     }
   }
 
+  function handleMediasRecipe(){
+    navigation.navigate("mediasRecipe");
+  }
+
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -165,28 +168,7 @@ export function CreateRecipe() {
       <ScreenHeader title="Nova Receita" />
       <ScrollView>
         <VStack paddingX={8} paddingY={5} space={3}>
-          <Image
-            width={"full"}
-            height={40}
-            alt="Imagem da receita"
-            resizeMode="cover"
-            rounded={"lg"}
-            source={{
-              uri: "https://s2-receitas.glbimg.com/jz_7W3MwHzwPgctjvZPxCJ1T8PQ=/0x0:1280x800/1000x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_1f540e0b94d8437dbbc39d567a1dee68/internal_photos/bs/2021/w/d/pPWpQOTJus3u4DeVyADQ/bolo-de-cenoura.jpg",
-            }}
-          />
-
-          <TouchableOpacity>
-            <Text
-              color="green.500"
-              fontWeight={"bold"}
-              fontSize={"md"}
-              marginBottom={8}
-            >
-              Adicionar foto de capa
-            </Text>
-          </TouchableOpacity>
-
+          
           <Box
             borderColor={"gray.400"}
             borderWidth={2}
@@ -214,6 +196,21 @@ export function CreateRecipe() {
                 onPress={() => setShowHowToModal(true)}
                 size={24}
                 title="Preparo"
+                variant={"outline"}
+                endIcon={
+                  <Icon
+                    name="post-add"
+                    as={MaterialIcons}
+                    color={"green.700"}
+                  />
+                }
+              />
+
+              <Button
+                flex={1}
+                onPress={handleMediasRecipe}
+                size={24}
+                title="Mídias"
                 variant={"outline"}
                 endIcon={
                   <Icon
@@ -294,12 +291,6 @@ export function CreateRecipe() {
           />
           <Text color={"red.500"}>{errors.category?.message}</Text>
 
-          <Input
-            onChangeText={setUrlVideo}
-            value={urlVideo}
-            placeholder="Url vídeo"
-            bg={"gray.600"}
-          />
 
           <HStack
             alignItems="center"

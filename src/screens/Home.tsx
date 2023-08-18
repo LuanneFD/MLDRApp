@@ -19,7 +19,7 @@ export function Home() {
   const [categories, SetCategories] = useState<CategoryDTO[]>([]);
   const [recipes, setRecipes] = useState<RecipeDTO[]>([]);
   const { user } = useAuth();
-
+ 
   const navigation = useNavigation<AppNavigatorRoutesProps>();
   const toast = useToast();
 
@@ -78,6 +78,7 @@ export function Home() {
     }, [categorySelected])
   );
 
+  
   return (
     <VStack flex={1}>
       <HomeHeader />
