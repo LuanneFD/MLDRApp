@@ -20,9 +20,9 @@ type AppRoutes = {
   home: undefined;
   profile: undefined;
   recipeDetails: { recipeId: string };
-  createRecipe: undefined;
+  createRecipe: { recipeId: string };
   userRecipes: undefined;
-  mediasRecipe: undefined;
+  mediasRecipe: { recipeId: string };
 };
 
 export type AppNavigatorRoutesProps = BottomTabNavigationProp<AppRoutes>;

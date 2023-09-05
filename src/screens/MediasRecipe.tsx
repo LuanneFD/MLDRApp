@@ -11,14 +11,18 @@ import { ScrollView, TouchableOpacity } from "react-native";
 import { Input } from "@components/Input";
 import { Button } from "@components/Button";
 import { useState, useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import { Feather } from "@expo/vector-icons";
 import { api } from "@services/api";
 import apiUpload from "@services/api-upload";
 import { AppError } from "@utils/AppError";
-import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from 'expo-file-system';
+
+type RouteParamsProps = {
+  recipeId: string;
+};
 
 export function MediasRecipe() {
   const [urlVideo, setUrlVideo] = useState("");
@@ -26,9 +30,12 @@ export function MediasRecipe() {
   const [medias, setMedias] = useState([]);
   const [type, setType] = useState("");
   const toast = useToast();
-  const [coverImage, setCoverImage] = useState("");
+  const [coverImage, setCoverImage] = useState<string | null | undefined>("");
   const [photoIsLoading, setphotoIsLoading] = useState(false);
+  const [image, setImage] = useState("");
 
+  const route = useRoute();
+  const { recipeId } = route.params as RouteParamsProps;
 
   function handleGoBack() {
     natigation.goBack();
@@ -39,83 +46,49 @@ export function MediasRecipe() {
   }, []);
 
   const getMedias = async () => {
-    const response = (await api.get(`/medias/1`)).data;
+    const response = (await api.get(`/medias/${recipeId}`)).data;
 
     setMedias(response.medias);
   };
 
+  
+function handleCancel(){
+  natigation.navigate("home");
+}
+
   async function handlePhotoSelect() {
     setphotoIsLoading(true);
     try {
-        const photoSelected = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            quality: 1,
-            aspect: [4, 4],
-            allowsEditing: true
-        });
-
-        if (photoSelected.canceled) {
-            return;
-        }
-
-        if (photoSelected.assets[0].uri) {
-            const photoInfo = await FileSystem.getInfoAsync(photoSelected.assets[0].uri);
-
-            if (photoInfo.exists && photoInfo.size > 1024 * 1024 * 1) {
-                return toast.show({
-                    title: 'A imagem deve ter no máximo 3MB',
-                    placement: 'top',
-                    duration: 3000,
-                    bgColor: 'red.500',
-                });
-            }
-
-            const fileExtension = photoSelected.assets[0].uri.split('.').pop();
-            
-            const photoFile = {
-                name: `${user.name}.${fileExtension}`.toLowerCase(),
-                uri : photoSelected.assets[0].uri,
-                type : `${photoSelected.assets[0].type}/${fileExtension}`
-            } as any;
-
-            //setUserPhoto(photoSelected.assets[0].uri);
-            const userPhotoUploadForm = new FormData();
-            userPhotoUploadForm.append('avatar', photoFile);
-
-            await api.put(`/recipes/img/${user.id}` , userPhotoUploadForm, {
-                headers: {
-                    'Content-Type' : 'multipart/form-data'
-                }
-            });
-
-            toast.show({
-                title : 'Foto atualizada!',
-                placement: 'top',
-                bgColor: 'green.500'
-            });
-        }
-    }
-    catch (error) {
-        console.log(error);
-    }
-    finally {
-        setphotoIsLoading(false);
-    }
-}
-
-  async function handleUploadCapa() {
-    try {
-      const form = new FormData();
-      form.append("file", coverImage);
-      const response = (await apiUpload.put(`/recipes/img/1`, form)).data;
-
-      toast.show({
-        title: response.message,
-        placement: "top",
-        duration: 3000,
-        bgColor: "green.700",
+      const photoSelected = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        aspect: [4, 4],
+        allowsEditing: true,
       });
 
+      if (photoSelected.canceled) {
+        return;
+      }
+
+      const photoInfo = await FileSystem.getInfoAsync(photoSelected.assets[0].uri);
+
+
+      console.log("CAPA SELECIONADA => ");
+      console.log(photoSelected.assets[0].uri.split('.'));
+
+      //setCoverImage(photoSelected.assets[0].fileName);
+
+
+      const form = new FormData();
+      form.append("file", coverImage);
+
+      const response = (await apiUpload.put(`/recipes/img/${recipeId}`, form)).data;
+
+      toast.show({
+        title: "Foto atualizada!",
+        placement: "top",
+        bgColor: "green.500",
+      });
     } catch (error) {
       const isAppError = error instanceof AppError;
       const title = isAppError
@@ -129,32 +102,72 @@ export function MediasRecipe() {
     }
   }
 
-  const uploadMedia = async (media) => {
-    const form = new FormData();
+  async function handleUploadCapa() {
+    try {
+      const form = new FormData();
+      form.append("file", coverImage);
+      const response = (await apiUpload.put(`/recipes/img/${recipeId}`, form))
+        .data;
 
-    form.append("file", media);
-    form.append("id_recipe", recipe.id);
-    form.append("type", type);
-
-    const response = (await apiUpload.post("/medias", form)).data;
-
-    if (response.error) {
-      toast.error(response.message);
-    } else {
-      toast.success(response.message);
+      toast.show({
+        title: response.message,
+        placement: "top",
+        duration: 3000,
+        bgColor: "green.700",
+      });
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível inserir a foto de capa.";
+      toast.show({
+        title,
+        placement: "top",
+        bgColor: "red.500",
+      });
     }
-    getMedias();
-  };
+  }
 
-  const deleteMedia = async (id, filename) => {
-    const response = (await api.delete(`/medias/${id}/${filename}`)).data;
-    if (response.error) {
-      toast.error(response.message);
-    } else {
-      toast.success(response.message);
+  async function uploadMedia() {
+    try {
+      const form = new FormData();
+
+      form.append("file", image);
+      form.append("id_recipe", recipeId);
+      form.append("type", type);
+
+      const response = (await apiUpload.post("/medias", form)).data;
+
+      toast.show({
+        title: response.message,
+        placement: "top",
+        duration: 3000,
+        bgColor: "green.700",
+      });
+
+      getMedias();
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível inserir a imagem.";
+      toast.show({
+        title,
+        placement: "top",
+        bgColor: "red.500",
+      });
     }
-    getMedias();
-  };
+  }
+
+  // async function deleteMedia() {
+  //   const response = (await api.delete(`/medias/${recipeId}/${filename}`)).data;
+  //   if (response.error) {
+  //     toast.error(response.message);
+  //   } else {
+  //     toast.success(response.message);
+  //   }
+  //   getMedias();
+  // };
 
   const deleteCoverImage = async () => {
     const response = (
@@ -204,7 +217,7 @@ export function MediasRecipe() {
             }}
           />
 
-          <TouchableOpacity onPress={handleUploadCapa}>
+          <TouchableOpacity onPress={handlePhotoSelect}>
             <Text
               color="green.500"
               fontWeight={"bold"}
@@ -266,11 +279,20 @@ export function MediasRecipe() {
           <Input
             onChangeText={setUrlVideo}
             value={urlVideo}
-            placeholder="Url vídeo"
+            placeholder="Vídeo Explicativo"
             bg={"gray.600"}
           />
 
-          <Button title="Salvar" variant={"solid"} />
+          <HStack space={2}>
+            <Button flex={1} size={24} title="Salvar" variant={"solid"} />
+            <Button
+             flex={1}
+             size={24}
+              title="Cancelar"
+              onPress={handleCancel}
+              variant={"solid"}
+            />
+          </HStack>
         </VStack>
       </ScrollView>
     </VStack>

@@ -62,6 +62,7 @@ const { user } = useAuth();
             <RecipeCard
               data={item}
               onPress={() => handleOpenRecipeDetails(item.id)}
+              edit={true}
             />
           )}
         />

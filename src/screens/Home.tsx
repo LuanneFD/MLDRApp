@@ -117,6 +117,7 @@ export function Home() {
               <RecipeCard
                 data={item}
                 onPress={() => handleOpenRecipeDetails(item.id)}
+                edit={false}
               />
             )}
           />

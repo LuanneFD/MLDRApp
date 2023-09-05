@@ -13,6 +13,7 @@ import {
 } from "native-base";
 import { TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { AntDesign } from '@expo/vector-icons'; 
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -44,6 +45,11 @@ export function RecipeDetails() {
     natigation.goBack();
   }
 
+  function handleEditRecipe(){
+    let recipeId = recipe.id;
+    natigation.navigate("createRecipe", { recipeId});
+  }
+  
   async function fetchRecipeDetails() {
     try {
       setIsLoading(true);
@@ -130,6 +136,13 @@ export function RecipeDetails() {
                 colorScheme="green"
                 variant={"solid"}
                 _icon={{ as: MaterialIcons, name: "video-library" }}
+              />
+               <IconButton
+                size={"lg"}
+                colorScheme="green"
+                variant={"solid"}
+                _icon={{ as: AntDesign, name: "edit" }}
+                onPress={handleEditRecipe}
               />
             </HStack>
 
