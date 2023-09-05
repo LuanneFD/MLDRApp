@@ -18,7 +18,7 @@ import { api } from "@services/api";
 import apiUpload from "@services/api-upload";
 import { AppError } from "@utils/AppError";
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from "expo-file-system";
 
 type RouteParamsProps = {
   recipeId: string;
@@ -37,9 +37,6 @@ export function MediasRecipe() {
   const route = useRoute();
   const { recipeId } = route.params as RouteParamsProps;
 
-  function handleGoBack() {
-    natigation.goBack();
-  }
 
   useEffect(() => {
     getMedias();
@@ -50,11 +47,6 @@ export function MediasRecipe() {
 
     setMedias(response.medias);
   };
-
-  
-function handleCancel(){
-  natigation.navigate("home");
-}
 
   async function handlePhotoSelect() {
     setphotoIsLoading(true);
@@ -70,19 +62,13 @@ function handleCancel(){
         return;
       }
 
-      const photoInfo = await FileSystem.getInfoAsync(photoSelected.assets[0].uri);
-
-
       console.log("CAPA SELECIONADA => ");
-      console.log(photoSelected.assets[0].uri.split('.'));
-
-      //setCoverImage(photoSelected.assets[0].fileName);
-
+      console.log(photoSelected.assets[0].uri);
 
       const form = new FormData();
-      form.append("file", coverImage);
-
-      const response = (await apiUpload.put(`/recipes/img/${recipeId}`, form)).data;
+      form.append("file", photoSelected.assets[0].uri);
+      
+      const response = (await api.put(`/recipes/img/${recipeId}`, form)).data;
 
       toast.show({
         title: "Foto atualizada!",
@@ -181,6 +167,20 @@ function handleCancel(){
     }
     loadRecipe();
   };
+
+  function handleRecipeRegister() {
+    natigation.navigate("userRecipes");
+  }
+
+
+  function handleCancel() {
+    natigation.navigate("home");
+  }
+
+  function handleGoBack() {
+    natigation.goBack();
+  }
+
   return (
     <VStack flex={1}>
       <HStack
@@ -284,10 +284,16 @@ function handleCancel(){
           />
 
           <HStack space={2}>
-            <Button flex={1} size={24} title="Salvar" variant={"solid"} />
             <Button
-             flex={1}
-             size={24}
+              flex={1}
+              size={24}
+              title="Finalizar"
+              variant={"solid"}
+              onPress={handleRecipeRegister}
+            />
+            <Button
+              flex={1}
+              size={24}
               title="Cancelar"
               onPress={handleCancel}
               variant={"solid"}

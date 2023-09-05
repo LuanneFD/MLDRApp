@@ -49,7 +49,7 @@ export function Home() {
     try {
       setIsLoading(true);
       const response = await api.get(
-        `/recipes/list/${user.id}/${categorySelected}`
+        `/recipes/list/${categorySelected}`
       );
       setRecipes(response.data);
     } catch (error) {
@@ -68,9 +68,9 @@ export function Home() {
     }
   }
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     fetchCategories();
-  }, []);
+  }, []));
 
   useFocusEffect(
     useCallback(() => {

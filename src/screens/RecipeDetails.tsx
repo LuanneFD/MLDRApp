@@ -13,7 +13,7 @@ import {
 } from "native-base";
 import { TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { AntDesign } from '@expo/vector-icons'; 
+import { AntDesign } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -24,6 +24,8 @@ import { api } from "@services/api";
 import { useEffect, useState } from "react";
 import { RecipeDTO } from "@dtos/RecipeDTO";
 import { Loading } from "@components/Loading";
+import { useAuth } from "@hooks/useAuth";
+import * as Linking from 'expo-linking';
 
 type RouteParamsProps = {
   recipeId: string;
@@ -36,6 +38,7 @@ export function RecipeDetails() {
   const { recipeId } = route.params as RouteParamsProps;
   const toast = useToast();
   const [recipe, setRecipe] = useState<RecipeDTO>({} as RecipeDTO);
+  const { user } = useAuth();
 
   function handleGoBack() {
     natigation.goBack();
@@ -45,17 +48,40 @@ export function RecipeDetails() {
     natigation.goBack();
   }
 
-  function handleEditRecipe(){
+  function handleEditRecipe() {
     let recipeId = recipe.id;
-    natigation.navigate("createRecipe", { recipeId});
+    natigation.navigate("createRecipe", { recipeId });
   }
-  
+
+  async function handleDeleteRecipe() {
+    try {
+      await api.delete(`/recipes/${recipeId}`);
+
+      toast.show({
+        title: "Receita excluída com sucesso.",
+        placement: "top",
+        bgColor: "green.500",
+      });
+
+      natigation.navigate("userRecipes");
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível excluir a receita.";
+
+      toast.show({
+        title,
+        placement: "top",
+        bgColor: "red.500",
+      });
+    }
+  }
+
   async function fetchRecipeDetails() {
     try {
       setIsLoading(true);
       const response = await api.get(`/recipes/${recipeId}`);
-      console.log(recipeId);
-      console.log(response.data);
       setRecipe(response.data);
     } catch (error) {
       const isAppError = error instanceof AppError;
@@ -136,14 +162,26 @@ export function RecipeDetails() {
                 colorScheme="green"
                 variant={"solid"}
                 _icon={{ as: MaterialIcons, name: "video-library" }}
+                onPress={() => Linking.openURL('https://www.youtube.com/watch?v=FDvmmUZezAw')}
               />
-               <IconButton
-                size={"lg"}
-                colorScheme="green"
-                variant={"solid"}
-                _icon={{ as: AntDesign, name: "edit" }}
-                onPress={handleEditRecipe}
-              />
+              {recipe.user.id === user.id && (
+                <>
+                  <IconButton
+                    size={"lg"}
+                    colorScheme="green"
+                    variant={"solid"}
+                    _icon={{ as: AntDesign, name: "edit" }}
+                    onPress={handleEditRecipe}
+                  />
+                  <IconButton
+                    size={"lg"}
+                    colorScheme="green"
+                    variant={"solid"}
+                    _icon={{ as: MaterialIcons, name: "delete" }}
+                    onPress={handleDeleteRecipe}
+                  />
+                </>
+              )}
             </HStack>
 
             <Text
