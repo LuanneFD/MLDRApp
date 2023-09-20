@@ -19,6 +19,7 @@ import apiUpload from "@services/api-upload";
 import { AppError } from "@utils/AppError";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import {MediaDTO} from "@dtos/MediaDTO";
 
 type RouteParamsProps = {
   recipeId: string;
@@ -27,7 +28,7 @@ type RouteParamsProps = {
 export function MediasRecipe() {
   const [urlVideo, setUrlVideo] = useState("");
   const natigation = useNavigation<AppNavigatorRoutesProps>();
-  const [medias, setMedias] = useState([]);
+  const [medias, setMedias] = useState<MediaDTO>({} as MediaDTO);
   const [type, setType] = useState("");
   const toast = useToast();
   const [coverImage, setCoverImage] = useState<string | null | undefined>("");
@@ -48,7 +49,7 @@ export function MediasRecipe() {
     setMedias(response.medias);
   };
 
-  async function handlePhotoSelect() {
+  /* async function handlePhotoSelect() {
     setphotoIsLoading(true);
     try {
       const photoSelected = await ImagePicker.launchImageLibraryAsync({
@@ -62,13 +63,18 @@ export function MediasRecipe() {
         return;
       }
 
-      console.log("CAPA SELECIONADA => ");
-      console.log(photoSelected.assets[0].uri);
+      const { uri } = photoSelected.assets[0]
 
-      const form = new FormData();
-      form.append("file", photoSelected.assets[0].uri);
-      
-      const response = (await api.put(`/recipes/img/${recipeId}`, form)).data;
+      const formData = new FormData()
+      formData.append('file', uri)
+
+      const response = (await api.put(`/recipes/img/${recipeId}`, {
+        file: 
+      }, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      })).data;
 
       toast.show({
         title: "Foto atualizada!",
@@ -76,6 +82,7 @@ export function MediasRecipe() {
         bgColor: "green.500",
       });
     } catch (error) {
+      console.log(error);
       const isAppError = error instanceof AppError;
       const title = isAppError
         ? error.message
@@ -86,33 +93,43 @@ export function MediasRecipe() {
         bgColor: "red.500",
       });
     }
-  }
+  } */
 
-  async function handleUploadCapa() {
-    try {
-      const form = new FormData();
-      form.append("file", coverImage);
-      const response = (await apiUpload.put(`/recipes/img/${recipeId}`, form))
-        .data;
+  const chooseImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+  };
 
-      toast.show({
-        title: response.message,
-        placement: "top",
-        duration: 3000,
-        bgColor: "green.700",
-      });
-    } catch (error) {
-      const isAppError = error instanceof AppError;
-      const title = isAppError
-        ? error.message
-        : "Não foi possível inserir a foto de capa.";
-      toast.show({
-        title,
-        placement: "top",
-        bgColor: "red.500",
-      });
-    }
-  }
+  // async function handleUploadCapa() {
+  //   try {
+  //     const form = new FormData();
+  //     form.append("file", coverImage);
+  //     const response = (await apiUpload.put(`/recipes/img/${recipeId}`, form))
+  //       .data;
+
+  //     toast.show({
+  //       title: response.message,
+  //       placement: "top",
+  //       duration: 3000,
+  //       bgColor: "green.700",
+  //     });
+  //   } catch (error) {
+  //     const isAppError = error instanceof AppError;
+  //     const title = isAppError
+  //       ? error.message
+  //       : "Não foi possível inserir a foto de capa.";
+  //     toast.show({
+  //       title,
+  //       placement: "top",
+  //       bgColor: "red.500",
+  //     });
+  //   }
+  // }
+  
 
   async function uploadMedia() {
     try {
@@ -217,7 +234,7 @@ export function MediasRecipe() {
             }}
           />
 
-          <TouchableOpacity onPress={handlePhotoSelect}>
+          <TouchableOpacity onPress={chooseImage}>
             <Text
               color="green.500"
               fontWeight={"bold"}

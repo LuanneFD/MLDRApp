@@ -15,8 +15,8 @@ import { Loading } from "@components/Loading";
 
 export function Home() {
   const [isLoading, setIsLoading] = useState(true);
-  const [categorySelected, setCategorySelected] = useState("1");
-  const [categories, SetCategories] = useState<CategoryDTO[]>([]);
+  const [categorySelected, setCategorySelected] = useState<number | null>(null);
+  const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const [recipes, setRecipes] = useState<RecipeDTO[]>([]);
   const { user } = useAuth();
  
@@ -27,10 +27,11 @@ export function Home() {
     navigation.navigate("recipeDetails", { recipeId });
   }
 
-  async function fetchCategories() {
+  const fetchCategories = useCallback(async () => {
     try {
-      const response = await api.get("/categories");
-      SetCategories(response.data);
+      const response = (await api.get("/categories")).data;
+      setCategories(response);
+      setCategorySelected(response[0].id)
     } catch (error) {
       const isAppError = error instanceof AppError;
       const title = isAppError
@@ -43,9 +44,9 @@ export function Home() {
         bgColor: "red.500",
       });
     }
-  }
+  }, [])
 
-  async function fetchRecipesByCategory() {
+  const fetchRecipesByCategory = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await api.get(
@@ -66,17 +67,18 @@ export function Home() {
     } finally {
       setIsLoading(false);
     }
-  }
 
-  useFocusEffect(useCallback(() => {
-    fetchCategories();
-  }, []));
+  }, [categorySelected])
 
-  useFocusEffect(
-    useCallback(() => {
+  useEffect(() => { 
+    fetchCategories()
+  }, [])
+
+  useEffect(() => {
+    if(categorySelected !== null) {
       fetchRecipesByCategory();
-    }, [categorySelected])
-  );
+    }
+  }, [categorySelected])
 
   
   return (
@@ -95,8 +97,8 @@ export function Home() {
         renderItem={({ item }) => (
           <Group
             name={item.description}
-            isActive={categorySelected === item.id}
-            onPress={() => setCategorySelected(item.id)}
+            isActive={categorySelected === +item.id}
+            onPress={() => setCategorySelected(+item.id)}
           />
         )}
       />

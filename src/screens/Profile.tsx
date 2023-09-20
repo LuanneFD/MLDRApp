@@ -33,16 +33,6 @@ const profileSchema = yup.object({
         .oneOf([yup.ref('password'), ''], 'A confirmação da senha não confere.')
 });
 
-// confirm_Password: yup
-// .string()
-// .oneOf([yup.ref('password'), ''], 'A confirmação da senha não confere.')
-// .when('password', {
-//     is: (Field: any) => Field,
-//     then: yup.string().nullable().required('Confirme a senha.')
-//     .transform((value) => !!value ? value : null)
-// })
-// });
-
 export function Profile() {
 
     const [isLoading, setIsLoading] = useState(false);

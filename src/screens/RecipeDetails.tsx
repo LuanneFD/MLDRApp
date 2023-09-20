@@ -15,7 +15,7 @@ import {
 import { Modal, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
@@ -46,7 +46,8 @@ export function RecipeDetails() {
   const { user } = useAuth();
   const [showIngredientsModal, setShowIngredientsModal] = useState(false);
   const [showPhotosModal, setShowPhotosModal] = useState(false);
-
+  const [photosIsLoading, setPhotosIsLoading] = useState(false);
+  const [medias, setMedias] = useState([]);
   function handleGoBack() {
     natigation.goBack();
   }
@@ -121,9 +122,34 @@ export function RecipeDetails() {
     }
   }
 
+  async function fetchMediasRecipe(){
+    try {
+      setPhotosIsLoading(true);
+      const response = await api.get(`/medias/${recipeId}`);
+      setMedias(response.data.medias);
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível carregar as imagens.";
+
+      toast.show({
+        title,
+        placement: "top",
+        bgColor: "red.500",
+      });
+    } finally {
+      setPhotosIsLoading(false);
+    }
+  }
+
   useEffect(() => {
     fetchRecipeDetails();
   }, [recipeId]);
+
+  useFocusEffect(useCallback(() => {
+    fetchMediasRecipe();
+  }, []));
 
   return (
     <VStack flex={1}>
@@ -321,42 +347,18 @@ export function RecipeDetails() {
 
        
             <Center borderColor={"gray.600"} borderWidth={"2"} marginBottom={6}>
-              <Image
+            {medias.filter(m => m.type != '1').map(media => (<Image
                 width={40}
                 height={40}
                 alt="Imagem da receita"
                 resizeMode="cover"
                 rounded={"lg"}
-                source={noImage}
-              />
-            </Center>
+                source={media}
+              />))
+       }
 
-            <Center borderColor={"gray.600"} borderWidth={"2"} marginBottom={6}>
-              <Image
-                width={"full"}
-                height={40}
-                alt="Imagem da receita"
-                resizeMode="cover"
-                rounded={"lg"}
-                source={{
-                  uri: "https://www.sabornamesa.com.br/media/k2/items/cache/ff3a9cd8c9cb4ea5f84f60d5e056cc7c_XL.jpg",
-                }}
-              />
-            </Center>
-
-            <Center borderColor={"gray.600"} borderWidth={"2"} marginBottom={6}>
-              <Image
-                width={"full"}
-                height={40}
-                alt="Imagem da receita"
-                resizeMode="cover"
-                rounded={"lg"}
-                source={{
-                  uri: "https://marianakalil.com.br/wp-content/uploads/2016/01/caprese-salad-ftr.jpg",
-                }}
-              />
-            </Center>
-          
+              
+            </Center>          
           <Button
             onPress={() => setShowPhotosModal(false)}
             title="Fechar"
