@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Group } from "@components/Group";
 import { HomeHeader } from "@components/HomeHeader";
-import { VStack, FlatList, Heading, useToast } from "native-base";
+import { VStack, FlatList, Heading, useToast, Text } from "native-base";
 import { RecipeCard } from "@components/RecipeCard";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 
@@ -122,6 +122,10 @@ export function Home() {
                 edit={false}
               />
             )}
+            contentContainerStyle={recipes.length === 0 && {flex:1, justifyContent: 'center'}}
+                ListEmptyComponent={() => (
+                 <Text color={"gray.100"} textAlign={"center"}>Não há receitas registradas para essa categoria ainda.</Text>
+                )}
           />
         )}
       </VStack>

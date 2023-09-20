@@ -19,7 +19,9 @@ import apiUpload from "@services/api-upload";
 import { AppError } from "@utils/AppError";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
-import {MediaDTO} from "@dtos/MediaDTO";
+import { MediaDTO } from "@dtos/MediaDTO";
+import { RecipeDTO } from "@dtos/RecipeDTO";
+import noImage from "@utils/noImage.png";
 
 type RouteParamsProps = {
   recipeId: string;
@@ -29,18 +31,19 @@ export function MediasRecipe() {
   const [urlVideo, setUrlVideo] = useState("");
   const natigation = useNavigation<AppNavigatorRoutesProps>();
   const [medias, setMedias] = useState<MediaDTO>({} as MediaDTO);
-  const [type, setType] = useState("");
+  const [recipe, setRecipe] = useState<RecipeDTO>({} as RecipeDTO);
   const toast = useToast();
   const [coverImage, setCoverImage] = useState<string | null | undefined>("");
   const [photoIsLoading, setphotoIsLoading] = useState(false);
   const [image, setImage] = useState("");
 
+
   const route = useRoute();
   const { recipeId } = route.params as RouteParamsProps;
 
-
   useEffect(() => {
     getMedias();
+    getRecipe();
   }, []);
 
   const getMedias = async () => {
@@ -49,8 +52,22 @@ export function MediasRecipe() {
     setMedias(response.medias);
   };
 
-  /* async function handlePhotoSelect() {
+  const getRecipe = async () => {
+    const response = await api.get(`/recipes/${recipeId}`);
+      setRecipe(response.data);
+  };
+
+  function getCurrentDate() {
+    return new Date()
+      .toLocaleString()
+      .replaceAll("/", "")
+      .replaceAll(" ", "")
+      .replaceAll(":", "");
+  }
+
+  async function handlePhotoSelect() {
     setphotoIsLoading(true);
+
     try {
       const photoSelected = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -63,24 +80,45 @@ export function MediasRecipe() {
         return;
       }
 
-      const { uri } = photoSelected.assets[0]
+      if (photoSelected.assets[0].uri) {
+        const photoInfo = await FileSystem.getInfoAsync(
+          photoSelected.assets[0].uri
+        );
 
-      const formData = new FormData()
-      formData.append('file', uri)
-
-      const response = (await api.put(`/recipes/img/${recipeId}`, {
-        file: 
-      }, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+        if (photoInfo.exists && photoInfo.size / 1024 / 1024 > 5) {
+          return toast.show({
+            title: "A imagem deve ter no máximo 5MB",
+            placement: "top",
+            duration: 3000,
+            bgColor: "red.500",
+          });
         }
-      })).data;
 
-      toast.show({
-        title: "Foto atualizada!",
-        placement: "top",
-        bgColor: "green.500",
-      });
+        const fileExtension = photoSelected.assets[0].uri.split(".").pop();
+        const photoFile = {
+          name: `${getCurrentDate()}.${fileExtension}`.toLowerCase(),
+          uri: photoSelected.assets[0].uri,
+          type: `${photoSelected.assets[0].type}/${fileExtension}`,
+        } as any;
+
+        const recipePhotoUploadForm = new FormData();
+        recipePhotoUploadForm.append("file", photoFile);
+
+       const recipeUpdatedResponse = await api.patch(`/recipes/img/${recipeId}`, recipePhotoUploadForm, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        recipe.cover_image = recipeUpdatedResponse.data.cover_image;
+
+
+        toast.show({
+          title: "Foto de capa atualizada!",
+          placement: "top",
+          bgColor: "green.500",
+        });
+      }
     } catch (error) {
       console.log(error);
       const isAppError = error instanceof AppError;
@@ -93,43 +131,7 @@ export function MediasRecipe() {
         bgColor: "red.500",
       });
     }
-  } */
-
-  const chooseImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-  };
-
-  // async function handleUploadCapa() {
-  //   try {
-  //     const form = new FormData();
-  //     form.append("file", coverImage);
-  //     const response = (await apiUpload.put(`/recipes/img/${recipeId}`, form))
-  //       .data;
-
-  //     toast.show({
-  //       title: response.message,
-  //       placement: "top",
-  //       duration: 3000,
-  //       bgColor: "green.700",
-  //     });
-  //   } catch (error) {
-  //     const isAppError = error instanceof AppError;
-  //     const title = isAppError
-  //       ? error.message
-  //       : "Não foi possível inserir a foto de capa.";
-  //     toast.show({
-  //       title,
-  //       placement: "top",
-  //       bgColor: "red.500",
-  //     });
-  //   }
-  // }
-  
+  }
 
   async function uploadMedia() {
     try {
@@ -162,33 +164,9 @@ export function MediasRecipe() {
     }
   }
 
-  // async function deleteMedia() {
-  //   const response = (await api.delete(`/medias/${recipeId}/${filename}`)).data;
-  //   if (response.error) {
-  //     toast.error(response.message);
-  //   } else {
-  //     toast.success(response.message);
-  //   }
-  //   getMedias();
-  // };
-
-  const deleteCoverImage = async () => {
-    const response = (
-      await api.put(`/recipes/img/delete/${recipe.id}/${recipe.cover_image}`)
-    ).data;
-
-    if (response.error) {
-      toast.error(response.message);
-    } else {
-      toast.success(response.message);
-    }
-    loadRecipe();
-  };
-
   function handleRecipeRegister() {
     natigation.navigate("userRecipes");
   }
-
 
   function handleCancel() {
     natigation.navigate("home");
@@ -229,12 +207,10 @@ export function MediasRecipe() {
             alt="Imagem da receita"
             resizeMode="cover"
             rounded={"lg"}
-            source={{
-              uri: "https://s2-receitas.glbimg.com/jz_7W3MwHzwPgctjvZPxCJ1T8PQ=/0x0:1280x800/1000x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_1f540e0b94d8437dbbc39d567a1dee68/internal_photos/bs/2021/w/d/pPWpQOTJus3u4DeVyADQ/bolo-de-cenoura.jpg",
-            }}
+            source={recipe.cover_image ? {uri : `${api.defaults.baseURL}/imagens/${recipe.cover_image}`} : noImage}
           />
 
-          <TouchableOpacity onPress={chooseImage}>
+          <TouchableOpacity onPress={handlePhotoSelect}>
             <Text
               color="green.500"
               fontWeight={"bold"}

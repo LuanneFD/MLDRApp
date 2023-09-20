@@ -248,7 +248,7 @@ export function CreateRecipe() {
           setRecipeIsLoading(true);
           const response = await api.get(`/recipes/${params.recipeId}`);
           const { data: currentRecipe } = response;
-
+         
           reset({
             name: currentRecipe.name,
             description: currentRecipe.description,
@@ -257,6 +257,8 @@ export function CreateRecipe() {
             howTo: currentRecipe.howto,
             privateRecipe: currentRecipe.privacy,
           });
+
+          setRecipe(currentRecipe);
         } 
         catch (error) {
           const isAppError = error instanceof AppError;

@@ -48,6 +48,7 @@ export function RecipeDetails() {
   const [showPhotosModal, setShowPhotosModal] = useState(false);
   const [photosIsLoading, setPhotosIsLoading] = useState(false);
   const [medias, setMedias] = useState([]);
+  
   function handleGoBack() {
     natigation.goBack();
   }
@@ -105,7 +106,6 @@ export function RecipeDetails() {
       setIsLoading(true);
       const response = await api.get(`/recipes/${recipeId}`);
       setRecipe(response.data);
-      console.log(response.data);
     } catch (error) {
       const isAppError = error instanceof AppError;
       const title = isAppError
@@ -347,15 +347,15 @@ export function RecipeDetails() {
 
        
             <Center borderColor={"gray.600"} borderWidth={"2"} marginBottom={6}>
-            {medias.filter(m => m.type != '1').map(media => (<Image
+            {/* {medias.filter(m => m.type != '1').map(media => (<Image
                 width={40}
                 height={40}
                 alt="Imagem da receita"
                 resizeMode="cover"
                 rounded={"lg"}
                 source={media}
-              />))
-       }
+              />)) */}
+       
 
               
             </Center>          

@@ -93,6 +93,7 @@ export function Profile() {
                     }
                 });
 
+                
                 toast.show({
                     title : 'Foto atualizada!',
                     placement: 'top',
