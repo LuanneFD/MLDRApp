@@ -15,7 +15,11 @@ import {
 import { Modal, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
-import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
@@ -47,8 +51,8 @@ export function RecipeDetails() {
   const [showIngredientsModal, setShowIngredientsModal] = useState(false);
   const [showPhotosModal, setShowPhotosModal] = useState(false);
   const [photosIsLoading, setPhotosIsLoading] = useState(false);
-  const [medias, setMedias] = useState([]);
-  
+  const [medias, setMedias] = useState<MediaDTO[]>([]);
+
   function handleGoBack() {
     natigation.goBack();
   }
@@ -103,6 +107,7 @@ export function RecipeDetails() {
 
   async function fetchRecipeDetails() {
     try {
+      console.log("BUSCANDO RECEITA");
       setIsLoading(true);
       const response = await api.get(`/recipes/${recipeId}`);
       setRecipe(response.data);
@@ -122,7 +127,7 @@ export function RecipeDetails() {
     }
   }
 
-  async function fetchMediasRecipe(){
+  async function fetchMediasRecipe() {
     try {
       setPhotosIsLoading(true);
       const response = await api.get(`/medias/${recipeId}`);
@@ -147,9 +152,11 @@ export function RecipeDetails() {
     fetchRecipeDetails();
   }, [recipeId]);
 
-  useFocusEffect(useCallback(() => {
-    fetchMediasRecipe();
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      fetchMediasRecipe();
+    }, [])
+  );
 
   return (
     <VStack flex={1}>
@@ -196,7 +203,9 @@ export function RecipeDetails() {
                 resizeMode="cover"
                 rounded={"lg"}
                 marginBottom={6}
-                source={{ uri: recipe.cover_image }}
+                source={{
+                  uri: `${api.defaults.baseURL}/imagens/${recipe.cover_image}`,
+                }}
               />
             ) : (
               <Center
@@ -345,25 +354,39 @@ export function RecipeDetails() {
             Imagens
           </Heading>
 
-       
-            <Center borderColor={"gray.600"} borderWidth={"2"} marginBottom={6}>
-            {/* {medias.filter(m => m.type != '1').map(media => (<Image
-                width={40}
-                height={40}
-                alt="Imagem da receita"
-                resizeMode="cover"
-                rounded={"lg"}
-                source={media}
-              />)) */}
-       
-
-              
-            </Center>          
-          <Button
-            onPress={() => setShowPhotosModal(false)}
-            title="Fechar"
-            variant={"solid"}
-          />
+          <ScrollView>
+            {medias ? (
+              medias.map((m) => (
+                <Center
+                  borderColor={"gray.600"}
+                  borderWidth={"2"}
+                  marginBottom={6}
+                >
+                  <Image
+                    width={"full"}
+                    height={"xs"}
+                    alt="Imagem da receita"
+                    resizeMode="cover"
+                    rounded={"lg"}
+                    source={{
+                      uri: `${api.defaults.baseURL}/imagens/${m.file_name}`,
+                    }}
+                  />
+                </Center>
+              ))
+            ) : (
+              <Center>
+                <Text color={"black"} textAlign={"center"}>
+                  Não há imagens registradas para essa receita ainda.
+                </Text>
+              </Center>
+            )}
+            <Button
+              onPress={() => setShowPhotosModal(false)}
+              title="Fechar"
+              variant={"solid"}
+            />
+          </ScrollView>
         </VStack>
       </Modal>
     </VStack>

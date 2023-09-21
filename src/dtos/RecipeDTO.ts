@@ -13,5 +13,6 @@ export type RecipeDTO = {
     howto: string;
     ingredients: string;
     category: CategoryDTO;
+    video_link:string;
     user: UserDTO;
 }

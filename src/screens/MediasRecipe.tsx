@@ -6,6 +6,8 @@ import {
   Heading,
   Icon,
   useToast,
+  Skeleton,
+  FlatList,
 } from "native-base";
 import { ScrollView, TouchableOpacity } from "react-native";
 import { Input } from "@components/Input";
@@ -22,21 +24,22 @@ import * as FileSystem from "expo-file-system";
 import { MediaDTO } from "@dtos/MediaDTO";
 import { RecipeDTO } from "@dtos/RecipeDTO";
 import noImage from "@utils/noImage.png";
+import { RecipePhotoImage } from "@components/RecipePhotoImage";
 
 type RouteParamsProps = {
   recipeId: string;
 };
 
 export function MediasRecipe() {
-  const [urlVideo, setUrlVideo] = useState("");
   const natigation = useNavigation<AppNavigatorRoutesProps>();
-  const [medias, setMedias] = useState<MediaDTO>({} as MediaDTO);
+  const [medias, setMedias] = useState<MediaDTO[]>([]);
+  const [imageOne, setImageOne] = useState<MediaDTO>({} as MediaDTO);
+  const [imageTwo, setImageTwo] = useState<MediaDTO>({} as MediaDTO);
   const [recipe, setRecipe] = useState<RecipeDTO>({} as RecipeDTO);
   const toast = useToast();
-  const [coverImage, setCoverImage] = useState<string | null | undefined>("");
-  const [photoIsLoading, setphotoIsLoading] = useState(false);
-  const [image, setImage] = useState("");
-
+  const [coverImageIsLoading, setcoverImageIsLoading] = useState(false);
+  const [imageOneIsLoading, setImageOneIsLoading] = useState(false);
+  const [imageTwoIsLoading, setImageTwoIsLoading] = useState(false);
 
   const route = useRoute();
   const { recipeId } = route.params as RouteParamsProps;
@@ -45,16 +48,22 @@ export function MediasRecipe() {
     getMedias();
     getRecipe();
   }, []);
-
+ 
   const getMedias = async () => {
     const response = (await api.get(`/medias/${recipeId}`)).data;
 
     setMedias(response.medias);
+
+    if (response.medias.length == 1) setImageOne(response.medias[0]);
+    else if (response.medias.length == 2) {
+      setImageOne(response.medias[0]);
+      setImageTwo(response.medias[1]);
+    }
   };
 
   const getRecipe = async () => {
     const response = await api.get(`/recipes/${recipeId}`);
-      setRecipe(response.data);
+    setRecipe(response.data);
   };
 
   function getCurrentDate() {
@@ -66,96 +75,119 @@ export function MediasRecipe() {
   }
 
   async function handlePhotoSelect() {
-    setphotoIsLoading(true);
+    const photoSelected = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      aspect: [4, 4],
+      allowsEditing: true,
+    });
 
-    try {
-      const photoSelected = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1,
-        aspect: [4, 4],
-        allowsEditing: true,
-      });
+    if (photoSelected.canceled) {
+      return;
+    }
 
-      if (photoSelected.canceled) {
-        return;
+    if (photoSelected.assets[0].uri) {
+      const photoInfo = await FileSystem.getInfoAsync(
+        photoSelected.assets[0].uri
+      );
+
+      if (photoInfo.exists && photoInfo.size / 1024 / 1024 > 5) {
+        return toast.show({
+          title: "A imagem deve ter no máximo 5MB",
+          placement: "top",
+          duration: 3000,
+          bgColor: "red.500",
+        });
       }
 
-      if (photoSelected.assets[0].uri) {
-        const photoInfo = await FileSystem.getInfoAsync(
-          photoSelected.assets[0].uri
-        );
+      const fileExtension = photoSelected.assets[0].uri.split(".").pop();
+      const photoFile = {
+        name: `${getCurrentDate()}.${fileExtension}`.toLowerCase(),
+        uri: photoSelected.assets[0].uri,
+        type: `${photoSelected.assets[0].type}/${fileExtension}`,
+      } as any;
 
-        if (photoInfo.exists && photoInfo.size / 1024 / 1024 > 5) {
-          return toast.show({
-            title: "A imagem deve ter no máximo 5MB",
-            placement: "top",
-            duration: 3000,
-            bgColor: "red.500",
-          });
-        }
+      const recipePhotoUploadForm = new FormData();
+      recipePhotoUploadForm.append("file", photoFile);
 
-        const fileExtension = photoSelected.assets[0].uri.split(".").pop();
-        const photoFile = {
-          name: `${getCurrentDate()}.${fileExtension}`.toLowerCase(),
-          uri: photoSelected.assets[0].uri,
-          type: `${photoSelected.assets[0].type}/${fileExtension}`,
-        } as any;
+      return recipePhotoUploadForm;
+    }
+  }
 
-        const recipePhotoUploadForm = new FormData();
-        recipePhotoUploadForm.append("file", photoFile);
-
-       const recipeUpdatedResponse = await api.patch(`/recipes/img/${recipeId}`, recipePhotoUploadForm, {
+  async function UpdateCoverImage() {
+    setcoverImageIsLoading(true);
+    try {
+      const recipePhotoUploadForm = await handlePhotoSelect();
+      const recipeUpdatedResponse = await api.patch(
+        `/recipes/img/${recipeId}`,
+        recipePhotoUploadForm,
+        {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        });
+        }
+      );
 
-        recipe.cover_image = recipeUpdatedResponse.data.cover_image;
+      recipe.cover_image = recipeUpdatedResponse.data.cover_image;
 
-
-        toast.show({
-          title: "Foto de capa atualizada!",
-          placement: "top",
-          bgColor: "green.500",
-        });
-      }
+      toast.show({
+        title: "Foto de capa adicionada!",
+        placement: "top",
+        bgColor: "green.500",
+      });
     } catch (error) {
-      console.log(error);
       const isAppError = error instanceof AppError;
       const title = isAppError
         ? error.message
-        : "Não foi possível inserir a foto de capa.";
+        : "Não foi possível adicionar a foto de capa.";
       toast.show({
         title,
         placement: "top",
         bgColor: "red.500",
       });
+    } finally {
+      setcoverImageIsLoading(false);
     }
   }
 
-  async function uploadMedia() {
+  async function UpdateRecipeImageOne() {
+    setImageOneIsLoading(true);
+    await UpdateRecipeImage("1");
+    setImageOneIsLoading(false);
+  }
+
+  async function UpdateRecipeImageTwo() {
+    setImageTwoIsLoading(true);
+    await UpdateRecipeImage("2");
+    setImageTwoIsLoading(false);
+  }
+
+  async function UpdateRecipeImage(param: string) {
     try {
-      const form = new FormData();
-
-      form.append("file", image);
-      form.append("id_recipe", recipeId);
-      form.append("type", type);
-
-      const response = (await apiUpload.post("/medias", form)).data;
+      const recipePhotoUploadForm = await handlePhotoSelect();
+      const recipeUpdatedResponse = await api.post(
+        `/medias/${recipeId}`,
+        recipePhotoUploadForm,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      
+      if (param == "1") setImageOne(recipeUpdatedResponse.data);
+      else if (param == "2") setImageTwo(recipeUpdatedResponse.data);
 
       toast.show({
-        title: response.message,
+        title: "Imagem adicionada com sucesso!",
         placement: "top",
-        duration: 3000,
-        bgColor: "green.700",
+        bgColor: "green.500",
       });
-
-      getMedias();
     } catch (error) {
       const isAppError = error instanceof AppError;
       const title = isAppError
         ? error.message
-        : "Não foi possível inserir a imagem.";
+        : "Não foi possível adicionar a imagem.";
       toast.show({
         title,
         placement: "top",
@@ -201,80 +233,30 @@ export function MediasRecipe() {
       </HStack>
       <ScrollView>
         <VStack paddingX={5} paddingY={5} space={3}>
-          <Image
-            width={"full"}
-            height={40}
-            alt="Imagem da receita"
-            resizeMode="cover"
-            rounded={"lg"}
-            source={recipe.cover_image ? {uri : `${api.defaults.baseURL}/imagens/${recipe.cover_image}`} : noImage}
+          <RecipePhotoImage
+            onPress={UpdateCoverImage}
+            descriptionButton="Adicionar foto de capa"
+            isLoading={coverImageIsLoading}
+            sourceImage={recipe.cover_image}
+            widthSize={"full"}
           />
 
-          <TouchableOpacity onPress={handlePhotoSelect}>
-            <Text
-              color="green.500"
-              fontWeight={"bold"}
-              fontSize={"md"}
-              marginBottom={8}
-            >
-              Adicionar foto de capa
-            </Text>
-          </TouchableOpacity>
-
-          <HStack space={3} justifyContent={"space-between"}>
-            <VStack>
-              <Image
-                width={40}
-                height={40}
-                alt="Imagem da receita"
-                resizeMode="cover"
-                rounded={"lg"}
-                source={{
-                  uri: "https://s2-receitas.glbimg.com/jz_7W3MwHzwPgctjvZPxCJ1T8PQ=/0x0:1280x800/1000x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_1f540e0b94d8437dbbc39d567a1dee68/internal_photos/bs/2021/w/d/pPWpQOTJus3u4DeVyADQ/bolo-de-cenoura.jpg",
-                }}
-              />
-              <TouchableOpacity>
-                <Text
-                  color="green.500"
-                  fontWeight={"bold"}
-                  fontSize={"md"}
-                  marginBottom={8}
-                >
-                  Adicionar Imagem
-                </Text>
-              </TouchableOpacity>
-            </VStack>
-
-            <VStack>
-              <Image
-                width={40}
-                height={40}
-                alt="Imagem da receita"
-                resizeMode="cover"
-                rounded={"lg"}
-                source={{
-                  uri: "https://s2-receitas.glbimg.com/jz_7W3MwHzwPgctjvZPxCJ1T8PQ=/0x0:1280x800/1000x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_1f540e0b94d8437dbbc39d567a1dee68/internal_photos/bs/2021/w/d/pPWpQOTJus3u4DeVyADQ/bolo-de-cenoura.jpg",
-                }}
-              />
-              <TouchableOpacity>
-                <Text
-                  color="green.500"
-                  fontWeight={"bold"}
-                  fontSize={"md"}
-                  marginBottom={8}
-                >
-                  Adicionar Imagem
-                </Text>
-              </TouchableOpacity>
-            </VStack>
+          <HStack justifyContent={"space-between"}>
+            <RecipePhotoImage
+              onPress={UpdateRecipeImageOne}
+              descriptionButton="Adicionar Imagem"
+              isLoading={imageOneIsLoading}
+              sourceImage={imageOne ? imageOne.file_name : ""}
+              widthSize={40}
+            />
+            <RecipePhotoImage
+              onPress={UpdateRecipeImageTwo}
+              descriptionButton="Adicionar Imagem"
+              isLoading={imageTwoIsLoading}
+              sourceImage={imageTwo ? imageTwo.file_name : ""}
+              widthSize={40}
+            />
           </HStack>
-
-          <Input
-            onChangeText={setUrlVideo}
-            value={urlVideo}
-            placeholder="Vídeo Explicativo"
-            bg={"gray.600"}
-          />
 
           <HStack space={2}>
             <Button

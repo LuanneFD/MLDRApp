@@ -22,8 +22,7 @@ export function UserRecipes() {
     navigation.navigate("recipeDetails", { recipeId });
   }
 
-    async function fetchUserRecipes() {
-
+  const fetchUserRecipes= useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await api.get( `/recipes/filteruser/${user.id}`);
@@ -43,11 +42,13 @@ export function UserRecipes() {
     } finally {
       setIsLoading(false);
     }
-  }
+  },
+  []
+);
 
-    useFocusEffect(useCallback(() => {
+    useEffect(() => {
     fetchUserRecipes();
-  }, []));
+  }, []);
   
   return (
     <VStack flex={1}>

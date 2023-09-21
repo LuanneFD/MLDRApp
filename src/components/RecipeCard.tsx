@@ -3,6 +3,7 @@ import { TouchableOpacity, TouchableOpacityProps } from "react-native";
 import { Entypo } from "@expo/vector-icons";
 import { RecipeDTO } from "@dtos/RecipeDTO";
 import noImage from "@utils/noImage.png";
+import { api } from "@services/api";
 
 type Props = TouchableOpacityProps & {
   data: RecipeDTO;
@@ -27,7 +28,7 @@ export function RecipeCard({ data, edit, ...rest }: Props) {
           marginRight={4}
           alt="Imagem da receita"
           resizeMode="cover"
-          source={data.cover_image ? { uri: data.cover_image } : noImage}
+          source={data.cover_image ? { uri: `${api.defaults.baseURL}/imagens/${data.cover_image}`, } : noImage}
         />
         <VStack flex={1}>
           <Heading fontSize="lg" color="white" numberOfLines={2}>
