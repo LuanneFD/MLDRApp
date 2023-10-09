@@ -35,6 +35,7 @@ import * as Linking from "expo-linking";
 import { Share } from "react-native";
 import { Button } from "@components/Button";
 import noImage from "@utils/noImage.png";
+import { MediaDTO } from "@dtos/MediaDTO";
 
 type RouteParamsProps = {
   recipeId: string;
@@ -87,7 +88,7 @@ export function RecipeDetails() {
       toast.show({
         title: "Receita excluída com sucesso.",
         placement: "top",
-        bgColor: "green.500",
+        bgColor: "red.500",
       });
 
       natigation.navigate("userRecipes");
@@ -168,7 +169,7 @@ export function RecipeDetails() {
         marginBottom={6}
       >
         <TouchableOpacity onPress={handleGoBack}>
-          <Icon as={Feather} name="arrow-left" color={"green.500"} size={6} />
+          <Icon as={Feather} name="arrow-left" color={"red.500"} size={6} />
         </TouchableOpacity>
 
         <Heading
@@ -184,7 +185,7 @@ export function RecipeDetails() {
           <Icon
             as={Ionicons}
             name="md-share-social-outline"
-            color={"green.500"}
+            color={"red.500"}
             size={6}
           />
         </TouchableOpacity>
@@ -228,13 +229,13 @@ export function RecipeDetails() {
               <IconButton
                 onPress={handleIngredients}
                 size={"lg"}
-                colorScheme="green"
+                colorScheme="red"
                 variant={"solid"}
                 _icon={{ as: MaterialCommunityIcons, name: "food-variant" }}
               />
               <IconButton
                 size={"lg"}
-                colorScheme="green"
+                colorScheme="red"
                 variant={"solid"}
                 _icon={{ as: MaterialIcons, name: "video-library" }}
                 onPress={() =>
@@ -243,7 +244,7 @@ export function RecipeDetails() {
               />
               <IconButton
                 size={"lg"}
-                colorScheme="green"
+                colorScheme="red"
                 variant={"solid"}
                 _icon={{ as: FontAwesome5, name: "photo-video" }}
                 onPress={() => setShowPhotosModal(true)}
@@ -252,14 +253,14 @@ export function RecipeDetails() {
                 <>
                   <IconButton
                     size={"lg"}
-                    colorScheme="green"
+                    colorScheme="red"
                     variant={"solid"}
                     _icon={{ as: AntDesign, name: "edit" }}
                     onPress={handleEditRecipe}
                   />
                   <IconButton
                     size={"lg"}
-                    colorScheme="green"
+                    colorScheme="red"
                     variant={"solid"}
                     _icon={{ as: MaterialIcons, name: "delete" }}
                     onPress={handleDeleteRecipe}
@@ -325,7 +326,7 @@ export function RecipeDetails() {
             _focus={{
               bg: "gray.700",
               borderWidth: 1,
-              borderColor: "green.500",
+              borderColor: "red.500",
             }}
           />
           <Button
@@ -354,8 +355,8 @@ export function RecipeDetails() {
             Imagens
           </Heading>
 
-          <ScrollView>
-            {medias ? (
+          <ScrollView> 
+            {medias.length ? (
               medias.map((m) => (
                 <Center
                   borderColor={"gray.600"}
@@ -375,13 +376,13 @@ export function RecipeDetails() {
                 </Center>
               ))
             ) : (
-              <Center>
-                <Text color={"black"} textAlign={"center"}>
-                  Não há imagens registradas para essa receita ainda.
+              <Center marginBottom={6}>
+                <Text color={"white"}>
+                  Não há imagens registradas para essa receita.
                 </Text>
               </Center>
             )}
-            <Button
+            <Button 
               onPress={() => setShowPhotosModal(false)}
               title="Fechar"
               variant={"solid"}

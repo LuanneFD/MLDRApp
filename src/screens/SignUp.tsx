@@ -6,9 +6,8 @@ import * as yup from "yup";
 import { VStack, Image, Text, Center, Heading, ScrollView, Switch, HStack, useToast } from 'native-base';
 
 import { api } from '@services/api';
-
-import BackGroundImg from '@assets/background.png'
-import LogoSvg from '@assets/logo.svg';
+import LogoJpg from '@assets/logo.png';
+import Background from '@assets/background.jpg';
 
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
@@ -70,9 +69,9 @@ export function SignUp() {
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
             <VStack flex={1} paddingX={10}>
-                <Image defaultSource={BackGroundImg} source={BackGroundImg} resizeMode="contain" position='absolute' alt="Descrição da imagem (trocar depois!)" />
+                <Image defaultSource={Background} source={Background} resizeMode="contain" position='absolute' alt="Descrição da imagem (trocar depois!)" />
                 <Center marginY={24}>
-                    <LogoSvg />
+                    <LogoJpg />
                     <Text color="gray.100" fontSize="sm">Seu livro de receitas digital</Text>
                 </Center>
                 <Center>
@@ -95,7 +94,7 @@ export function SignUp() {
         render={({ field: { onChange, value } }) => (
         <Switch onChange={onChange}
         value={value}
-        onTrackColor="green.500" onThumbColor="green.400" offTrackColor="gray.500"  offThumbColor="gray.100" size="md" />)}
+        onTrackColor="red.500" onThumbColor="green.400" offTrackColor="gray.500"  offThumbColor="gray.100" size="md" />)}
     />
 
 <Text color={'white'}>Perfil Profissional</Text>

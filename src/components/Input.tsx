@@ -27,7 +27,7 @@ export function Input({ errorMessage = null,isInvalid, ...rest }: Props) {
                 _focus={{
                     bg: "gray.700",
                     borderWidth: 1,
-                    borderColor: "green.500"
+                    borderColor: "red.500"
                 }}
                 {...rest}
             />

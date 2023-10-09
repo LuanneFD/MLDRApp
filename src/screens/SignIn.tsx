@@ -5,8 +5,8 @@ import { VStack, Image, Text, Center, Heading, ScrollView, useToast } from 'nati
 import { useAuth } from '@hooks/useAuth';
 import { AuthNavigatorRoutesProps } from '@routes/auth.routes';
 
-import BackGroundImg from '@assets/background.png'
-import LogoSvg from '@assets/logo.svg';
+import BackGroundImg from '@assets/background.jpg';
+import LogoPng from '@assets/logo.png';
 
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
@@ -54,9 +54,9 @@ export function SignIn() {
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
             <VStack flex={1} paddingX={10}>
-                <Image defaultSource={BackGroundImg} source={BackGroundImg} resizeMode="contain" position='absolute' alt="Descrição da imagem (trocar depois!)" />
+                <Image defaultSource={BackGroundImg} source={BackGroundImg} resizeMode="contain" position='absolute' alt="Imagem de fundo" />
                 <Center marginY={24}>
-                    <LogoSvg />
+                    {/* <LogoPng /> */}
                     <Text color="gray.100" fontSize="sm">Seu livro de receitas digital</Text>
                 </Center>
                 <Center>

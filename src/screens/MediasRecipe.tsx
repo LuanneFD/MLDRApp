@@ -133,7 +133,7 @@ export function MediasRecipe() {
       toast.show({
         title: "Foto de capa adicionada!",
         placement: "top",
-        bgColor: "green.500",
+        bgColor: "red.500",
       });
     } catch (error) {
       const isAppError = error instanceof AppError;
@@ -181,7 +181,7 @@ export function MediasRecipe() {
       toast.show({
         title: "Imagem adicionada com sucesso!",
         placement: "top",
-        bgColor: "green.500",
+        bgColor: "red.500",
       });
     } catch (error) {
       const isAppError = error instanceof AppError;
@@ -218,7 +218,7 @@ export function MediasRecipe() {
         marginBottom={6}
       >
         <TouchableOpacity onPress={handleGoBack}>
-          <Icon as={Feather} name="arrow-left" color={"green.500"} size={6} />
+          <Icon as={Feather} name="arrow-left" color={"red.500"} size={6} />
         </TouchableOpacity>
 
         <Heading
@@ -235,7 +235,6 @@ export function MediasRecipe() {
         <VStack paddingX={5} paddingY={5} space={3}>
           <RecipePhotoImage
             onPress={UpdateCoverImage}
-            descriptionButton="Adicionar foto de capa"
             isLoading={coverImageIsLoading}
             sourceImage={recipe.cover_image}
             widthSize={"full"}
@@ -244,14 +243,12 @@ export function MediasRecipe() {
           <HStack justifyContent={"space-between"}>
             <RecipePhotoImage
               onPress={UpdateRecipeImageOne}
-              descriptionButton="Adicionar Imagem"
               isLoading={imageOneIsLoading}
               sourceImage={imageOne ? imageOne.file_name : ""}
               widthSize={40}
             />
             <RecipePhotoImage
               onPress={UpdateRecipeImageTwo}
-              descriptionButton="Adicionar Imagem"
               isLoading={imageTwoIsLoading}
               sourceImage={imageTwo ? imageTwo.file_name : ""}
               widthSize={40}

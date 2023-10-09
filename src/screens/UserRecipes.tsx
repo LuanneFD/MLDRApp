@@ -22,33 +22,33 @@ export function UserRecipes() {
     navigation.navigate("recipeDetails", { recipeId });
   }
 
-  const fetchUserRecipes= useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get( `/recipes/filteruser/${user.id}`);
-      setRecipes(response.data);
-      
-    } catch (error) {
-      const isAppError = error instanceof AppError;
-      const title = isAppError
-        ? error.message
-        : "Não foi possível carregar as receitas.";
+useFocusEffect(
+  useCallback(() => {
+    const fetchUserRecipes = async () => {
+      try {
+        setIsLoading(true);
+        const response = await api.get( `/recipes/filteruser/${user.id}`);
+        setRecipes(response.data);
+        
+      } catch (error) {
+        const isAppError = error instanceof AppError;
+        const title = isAppError
+          ? error.message
+          : "Não foi possível carregar as receitas.";
+  
+        toast.show({
+          title,
+          placement: "top",
+          bgColor: "red.500",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      toast.show({
-        title,
-        placement: "top",
-        bgColor: "red.500",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  },
-  []
-);
-
-    useEffect(() => {
     fetchUserRecipes();
-  }, []);
+  }, [])
+);
   
   return (
     <VStack flex={1}>

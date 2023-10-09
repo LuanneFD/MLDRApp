@@ -12,13 +12,13 @@ export function Button({ title,variant = 'solid',size, ...rest }: Props) {
             {...rest}
             width={!!size ? size : 'full' }
             height={14}
-            background={variant === "outline" ?"transparent" : "green.700"}  
+            background={variant === "outline" ?"transparent" : "red.700"}  
             borderWidth={variant === "outline" ? 1 : 0}
-            borderColor="green.500"
+            borderColor="red.500"
             rounded="sm"
-            _pressed={{ bg: variant === "outline" ? "gray.500" :"green.500" }}
+            _pressed={{ bg: variant === "outline" ? "gray.500" :"red.500" }}
         >
-            <Text color={variant === "outline" ?"green.500" :"white"} fontFamily="heading" fontSize="sm">{title}</Text>
+            <Text color={variant === "outline" ?"red.500" :"white"} fontFamily="heading" fontSize="sm">{title}</Text>
         </NativeBaseButton>
     );
 }

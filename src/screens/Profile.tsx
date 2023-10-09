@@ -49,66 +49,6 @@ export function Profile() {
         resolver: yupResolver(profileSchema)
     });
 
-
-    async function handleuserPhotoSelect() {
-        setphotoIsLoading(true);
-        try {
-            const photoSelected = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                quality: 1,
-                aspect: [4, 4],
-                allowsEditing: true
-            });
-
-            if (photoSelected.canceled) {
-                return;
-            }
-
-            if (photoSelected.assets[0].uri) {
-                const photoInfo = await FileSystem.getInfoAsync(photoSelected.assets[0].uri);
-
-                if (photoInfo.exists && photoInfo.size > 1024 * 1024 * 1) {
-                    return toast.show({
-                        title: 'A imagem deve ter no máximo 3MB',
-                        placement: 'top',
-                        duration: 3000,
-                        bgColor: 'red.500',
-                    });
-                }
-
-                const fileExtension = photoSelected.assets[0].uri.split('.').pop();
-                const photoFile = {
-                    name: `${user.name}.${fileExtension}`.toLowerCase(),
-                    uri : photoSelected.assets[0].uri,
-                    type : `${photoSelected.assets[0].type}/${fileExtension}`
-                } as any;
-
-                //setUserPhoto(photoSelected.assets[0].uri);
-                const userPhotoUploadForm = new FormData();
-                userPhotoUploadForm.append('avatar', photoFile);
-
-                await api.put(`/recipes/img/${user.id}` , userPhotoUploadForm, {
-                    headers: {
-                        'Content-Type' : 'multipart/form-data'
-                    }
-                });
-
-                
-                toast.show({
-                    title : 'Foto atualizada!',
-                    placement: 'top',
-                    bgColor: 'green.500'
-                });
-            }
-        }
-        catch (error) {
-            console.log(error);
-        }
-        finally {
-            setphotoIsLoading(false);
-        }
-    }
-
     async function handleProfileUpdate({ name, email, password }: FormDataProps) {
         try {
             setIsLoading(true);
@@ -122,7 +62,7 @@ export function Profile() {
             toast.show({
                 title: 'Perfil atualizado com sucesso!',
                 placement: 'top',
-                bgColor: 'green.500'
+                bgColor: 'red.500'
             });
         }
         catch (error) {
@@ -145,19 +85,6 @@ export function Profile() {
         <VStack flex={1}>
             <ScreenHeader title="Perfil" />
             <ScrollView contentContainerStyle={{ paddingBottom: 5 }}>
-                <Center >
-                    {
-                        photoIsLoading ?
-                            <Skeleton height={PHOTO_SIZE} width={PHOTO_SIZE} rounded={'full'} startColor="gray.500" endColor="gray.400" />
-                            :
-                            <ProfilePhoto alt="foto do usuário" source={{ uri: userPhoto }} size={PHOTO_SIZE} />
-                    }
-
-                    <TouchableOpacity onPress={handleuserPhotoSelect}>
-                        <Text color="green.500" fontWeight={'bold'} fontSize={'md'} marginBottom={8}>Alterar foto</Text>
-                    </TouchableOpacity>
-                </Center>
-
                 <Center px={10}>
                     <Controller
                         control={control}

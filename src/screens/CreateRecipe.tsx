@@ -126,11 +126,13 @@ export function CreateRecipe() {
         id_user: user.id,
       });
 
+      reset(defaultFormValues);
+
       toast.show({
         title: response.data.message,
         placement: "top",
         duration: 3000,
-        bgColor: "green.700",
+        bgColor: "red.700",
       });
 
       navigation.navigate("mediasRecipe", {
@@ -180,7 +182,7 @@ export function CreateRecipe() {
         title: response.data.message,
         placement: "top",
         duration: 3000,
-        bgColor: "green.700",
+        bgColor: "red.700",
       });
 
       navigation.navigate("mediasRecipe", {
@@ -316,7 +318,7 @@ export function CreateRecipe() {
                     <Icon
                       name="food-takeout-box-outline"
                       as={MaterialCommunityIcons}
-                      color={"green.700"}
+                      color={"red.700"}
                     />
                   }
                 />
@@ -330,7 +332,7 @@ export function CreateRecipe() {
                     <Icon
                       name="post-add"
                       as={MaterialIcons}
-                      color={"green.700"}
+                      color={"red.700"}
                     />
                   }
                 />
@@ -371,7 +373,7 @@ export function CreateRecipe() {
                   _focus={{
                     bg: "gray.700",
                     borderWidth: 1,
-                    borderColor: "green.500",
+                    borderColor: "red.500",
                   }}
                 />
               )}
@@ -475,7 +477,7 @@ export function CreateRecipe() {
                       _focus={{
                         bg: "gray.700",
                         borderWidth: 1,
-                        borderColor: "green.500",
+                        borderColor: "red.500",
                       }}
                     />
                   )}
@@ -525,7 +527,7 @@ export function CreateRecipe() {
                       _focus={{
                         bg: "gray.700",
                         borderWidth: 1,
-                        borderColor: "green.500",
+                        borderColor: "red.500",
                       }}
                     />
                   )}

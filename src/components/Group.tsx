@@ -17,12 +17,12 @@ export function Group({ name,isActive, ...rest }: Props) {
             overflow="hidden"
             isPressed={isActive}
             _pressed={{
-                borderColor: "green.500",
+                borderColor: "red.500",
                 borderWidth: 1
             }}
             {...rest}
         >
-            <Text color={isActive ? "green.500" : "gray.200"}
+            <Text color={isActive ? "red.500" : "gray.200"}
                 textTransform="uppercase"
                 fontSize="xs"
                 fontWeight="bold"

@@ -1,20 +1,19 @@
 import { api } from "@services/api";
-import { Image, Skeleton, VStack, Text, Center } from "native-base";
+import { Image, Skeleton, VStack, Text, Center, Icon } from "native-base";
 import noImage from "@utils/noImage.png";
 import { TouchableOpacity, TouchableOpacityProps } from "react-native";
+import { AntDesign } from '@expo/vector-icons'; 
 
 type Props = TouchableOpacityProps & {
   widthSize: "full" | number;
   sourceImage: string;
   isLoading: boolean;
-  descriptionButton: string;
 };
 
 export function RecipePhotoImage({
   widthSize,
   sourceImage,
   isLoading,
-  descriptionButton,
   ...rest
 }: Props) {
 
@@ -56,14 +55,7 @@ export function RecipePhotoImage({
         </>
       )}
       <TouchableOpacity {...rest}>
-        <Text
-          color="green.500"
-          fontWeight={"bold"}
-          fontSize={"md"}
-          marginBottom={8}
-        >
-          {descriptionButton}
-        </Text>
+      <Icon as={AntDesign} name="pluscircle" color={"red.500"} size={8} marginTop={2}/>
       </TouchableOpacity>
     </VStack>
   );
