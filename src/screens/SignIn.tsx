@@ -5,8 +5,7 @@ import { VStack, Image, Text, Center, Heading, ScrollView, useToast } from 'nati
 import { useAuth } from '@hooks/useAuth';
 import { AuthNavigatorRoutesProps } from '@routes/auth.routes';
 
-import BackGroundImg from '@assets/background.jpg';
-import LogoPng from '@assets/logo.png';
+import BackGroundImg from '@assets/background.png';
 
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
@@ -27,7 +26,7 @@ export function SignIn() {
     const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>();
 
     function handleNewAccount() {
-        navigation.navigate('signUp');
+        navigation.navigate("signUp");
     }
 
     async function handleSignIn({ email, password }: FormDataProps) {
@@ -52,16 +51,16 @@ export function SignIn() {
     }
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+       
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <VStack flex={1} paddingX={10}>
-                <Image defaultSource={BackGroundImg} source={BackGroundImg} resizeMode="contain" position='absolute' alt="Imagem de fundo" />
-                <Center marginY={24}>
-                    {/* <LogoPng /> */}
-                    <Text color="gray.100" fontSize="sm">Seu livro de receitas digital</Text>
+                 <Image defaultSource={BackGroundImg} source={BackGroundImg}  width={'lg'} height={'full'} position='absolute' alt="Imagem de fundo" />
+                <Center marginTop={'48'} >
+                    <Text color="gray.100" fontSize="xl">Meu Livro de Receitas</Text>
                 </Center>
                 <Center>
                     <Heading color="gray.100" fontSize="xl" marginBottom={6} fontFamily="heading">
-                        Acesse sua conta
+                        Acesse sua Conta
                     </Heading>
 
                     <Controller
@@ -97,9 +96,9 @@ export function SignIn() {
 
                 <Center marginTop={24}>
                     <Text color="gray.100" fontSize="sm" marginBottom={3} fontFamily="body">Ainda não tem acesso?</Text>
-                    <Button title="Criar conta" variant="outline" onPress={handleNewAccount} />
+                    <Button title="Criar Conta" variant="outline" onPress={handleNewAccount} />
                 </Center>
             </VStack>
-        </ScrollView>
+            </ScrollView>
     );
 }

@@ -3,11 +3,10 @@ import { useForm, Controller } from 'react-hook-form';
 import { useNavigation } from '@react-navigation/native'
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
-import { VStack, Image, Text, Center, Heading, ScrollView, Switch, HStack, useToast } from 'native-base';
+import { VStack, Image, Text, Center, Heading, ScrollView, useToast } from 'native-base';
 
 import { api } from '@services/api';
-import LogoJpg from '@assets/logo.png';
-import Background from '@assets/background.jpg';
+import BackGroundImg from '@assets/background.png';
 
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
@@ -42,6 +41,7 @@ export function SignUp() {
     });
 
     const navigation = useNavigation();
+
     function handleGoBack() {
         navigation.goBack();
     }
@@ -67,16 +67,15 @@ export function SignUp() {
     }
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <VStack flex={1} paddingX={10}>
-                <Image defaultSource={Background} source={Background} resizeMode="contain" position='absolute' alt="Descrição da imagem (trocar depois!)" />
-                <Center marginY={24}>
-                    <LogoJpg />
-                    <Text color="gray.100" fontSize="sm">Seu livro de receitas digital</Text>
+            <Image defaultSource={BackGroundImg} source={BackGroundImg}  width={'lg'} height={'full'} position='absolute' alt="Imagem de fundo" />
+                <Center marginTop={'48'}>    
+                    <Text color="gray.100" fontSize="xl">Meu Livro de Receitas</Text>
                 </Center>
                 <Center>
                     <Heading color="gray.100" fontSize="xl" marginBottom={6} fontFamily="heading">
-                        Crie sua conta
+                        Crie sua Conta
                     </Heading>
 
                     <Controller
@@ -88,17 +87,6 @@ export function SignUp() {
                                 value={value}
                                 errorMessage={errors.name?.message} />)}
                     />
-
-                    {/* <HStack alignItems={'center'} alignContent={'space-between'}>
-    <Controller control={control} name="typeUser" 
-        render={({ field: { onChange, value } }) => (
-        <Switch onChange={onChange}
-        value={value}
-        onTrackColor="red.500" onThumbColor="green.400" offTrackColor="gray.500"  offThumbColor="gray.100" size="md" />)}
-    />
-
-<Text color={'white'}>Perfil Profissional</Text>
-</HStack> */}
 
                     <Controller
                         control={control}
@@ -137,12 +125,12 @@ export function SignUp() {
                     />
 
 
-                    <Button title="Criar e acessar" onPress={handleSubmit(hadleSignUp)} isLoading={isLoading} />
+                    <Button title="Criar e Acessar" onPress={handleSubmit(hadleSignUp)} isLoading={isLoading} />
                 </Center>
 
-                <Button marginTop={16} title="Voltar para o login" variant="outline" onPress={handleGoBack} />
+                <Button marginTop={10} title="Voltar para o Login" variant="outline" onPress={handleGoBack} />
 
             </VStack>
-        </ScrollView>
+            </ScrollView>
     );
 }
